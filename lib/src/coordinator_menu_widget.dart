@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'custom_scroll_view.dart';
 
-class CoordinatorMenuWidget extends StatelessWidget {
+class CoordinatorMenuWidget extends StatefulWidget {
 
   final Widget functionView;
   final Widget extendView;
@@ -18,10 +18,31 @@ class CoordinatorMenuWidget extends StatelessWidget {
   });
 
   @override
+  State<CoordinatorMenuWidget> createState() => _CoordinatorMenuWidgetState();
+}
+
+class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
+  
+  late ScrollController _scrollController;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController = ScrollController();
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+  
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
         CustomScrollView(
+          controller: _scrollController,
           slivers: [
             SliverToBoxAdapter(child: Container(
               height: 100,
@@ -31,17 +52,16 @@ class CoordinatorMenuWidget extends StatelessWidget {
               height: 200,
               color: Colors.purple,
             )),
-            functionView
+            widget.functionView
           ],
         ),
         CoordinatorMenuView(
-          fixedView: fixedView,
-          extendView: extendView,
-          menus: menus,
+          scrollController: _scrollController,
+          fixedView: widget.fixedView,
+          extendView: widget.extendView,
+          menus: widget.menus,
         )
       ],
     );
   }
-
-
 }
