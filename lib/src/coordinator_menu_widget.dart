@@ -39,28 +39,28 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
   
   @override
   Widget build(BuildContext context) {
-    return Stack(
+    return Column(
       children: [
-        CustomScrollView(
-          controller: _scrollController,
-          slivers: [
-            SliverToBoxAdapter(child: Container(
-              height: 100,
-              color: Colors.orange,
-            )),
-            SliverToBoxAdapter(child: Container(
-              height: 200,
-              color: Colors.purple,
-            )),
-            widget.functionView
-          ],
+        Expanded(
+          child: Stack(
+            children: [
+              CustomScrollView(
+                controller: _scrollController,
+                slivers: [
+                  SliverToBoxAdapter(child: widget.fixedView),
+                  SliverToBoxAdapter(child: widget.extendView),
+                  widget.functionView
+                ],
+              ),
+              CoordinatorMenuView(
+                scrollController: _scrollController,
+                fixedView: widget.fixedView,
+                extendView: widget.extendView,
+                menus: widget.menus,
+              )
+            ],
+          ),
         ),
-        CoordinatorMenuView(
-          scrollController: _scrollController,
-          fixedView: widget.fixedView,
-          extendView: widget.extendView,
-          menus: widget.menus,
-        )
       ],
     );
   }

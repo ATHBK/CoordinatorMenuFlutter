@@ -1,3 +1,4 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_coordinator_menu/coordinator_menu.dart';
 
@@ -75,11 +76,11 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: Container(
-        color: Colors.pink,
-        child: CoordinatorMenuWidget(
-            functionView: SliverList(delegate: SliverChildBuilderDelegate(
-                    (context, index) {
+        body: Container(
+            color: Colors.pink,
+            child: CoordinatorMenuWidget(
+                functionView: SliverList(
+                    delegate: SliverChildBuilderDelegate((context, index) {
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 16),
                     child: Container(
@@ -87,41 +88,38 @@ class _MyHomePageState extends State<MyHomePage> {
                       height: 50,
                     ),
                   );
-                },
-                childCount: 20
-            )),
-            extendView: Container(
-              height: 200,
-              color: Colors.yellow,
-            ),
-            fixedView: Container(
-              height: 100,
-              color: Colors.blue,
-            ),
-            menus: [
-              Container(
-                width: 50,
-                height: 50,
-                color: Colors.red,
-              ),
-              Container(
-                width: 50,
-                height: 50,
-                color: Colors.red,
-              ),
-              Container(
-                width: 50,
-                height: 50,
-                color: Colors.red,
-              ),
-              Container(
-                width: 50,
-                height: 50,
-                color: Colors.red,
-              )
-            ]
-        )
-      )
-    );
+                }, childCount: 20)),
+                extendView: Container(
+                  height: 200,
+                  color: Colors.yellow,
+                ),
+                fixedView: Container(
+                  height: 100,
+                  color: Colors.blue,
+                ),
+                menus: [
+                  Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.red,
+                  ),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.red,
+                  ),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.red,
+                  ),
+                  Container(
+                    width: 50,
+                    height: 50,
+                    color: Colors.red,
+                  )
+                ])));
   }
+
+
 }

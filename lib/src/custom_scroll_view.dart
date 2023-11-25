@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
 class CoordinatorMenuView extends MultiChildRenderObjectWidget {
 
@@ -57,17 +58,17 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
   }
 
   double heightExpandView = 0;
-  final listPositionDesX = [50, 150, 250, 350];
+  final listPositionDesX = [30, 90, 160, 220];
 
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _scrollable.position.addListener(markNeedsPaint);
+    _scrollable.position.addListener(markNeedsLayout);
   }
 
   @override
   void detach() {
-    _scrollable.position.removeListener(markNeedsPaint);
+    _scrollable.position.removeListener(markNeedsLayout);
     super.detach();
   }
 
@@ -79,18 +80,36 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
   }
 
   @override
+  Size computeDryLayout(BoxConstraints constraints) {
+    return Size(100, 100);
+  }
+
+  @override
   void performLayout() {
-    print("performLayout");
-    
     final BoxConstraints constraints = this.constraints;
     final maxWidth = constraints.maxWidth;
     double maxHeight = 0;
+    double heightOfChild = 0;
     RenderBox? child = firstChild;
     int index = 0;
+    double fraction = 1;
+    if (heightExpandView > 0){
+      final scrollDy = scrollable.offset;
+      fraction = scrollDy / heightExpandView;
+    }
     while(child != null) {
       final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
-      child.layout(constraints, parentUsesSize: true);
+      if (child.hasSize && index >= 2){
+        print("Child da co size");
+        final maxWidth = 50 - 20 * fraction;
+        final maxHeight = 50 - 20 * fraction;
+        child.layout(BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight), parentUsesSize: true);
+      }
+      else {
+        child.layout(constraints, parentUsesSize: true);
+      }
       final heightOfChildView = child.size.height;
+      heightOfChild = heightOfChildView;
       if(index == 0){
         heightExpandView = heightOfChildView;
       }
@@ -117,12 +136,12 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       // extendView
       else if (index == 1){
         // childParentData.offset = Offset(0, heightOfFixedView);
-        childParentData.offset = Offset(0, 80);
+        childParentData.offset = Offset.zero;
       }
       // menus
       else {
         final x = part * indexMenu + part / 4;
-        final y = size.height + 80;
+        final y = size.height - 16 - heightOfChild;
         childParentData.offset = Offset(x, y);
         // print("x: $x, y: $y");
         indexMenu++;
@@ -131,6 +150,64 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       child = childParentData.nextSibling;
     }
   }
+
+  // @override
+  // Size computeDryLayout(BoxConstraints constraints) {
+  //   final BoxConstraints constraints = this.constraints;
+  //   final maxWidth = constraints.maxWidth;
+  //   double maxHeight = 0;
+  //   double heightOfChild = 0;
+  //   RenderBox? child = firstChild;
+  //   int index = 0;
+  //   while(child != null) {
+  //     final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
+  //     if (child.hasSize){
+  //       final scrollDy = scrollable.offset;
+  //       final fraction = scrollDy / heightExpandView;
+  //       final size = 50 - fraction * 20;
+  //       child.layout(BoxConstraints(maxHeight: size, maxWidth: size));
+  //     }
+  //     else {
+  //       child.layout(constraints, parentUsesSize: true);
+  //     }
+  //     final heightOfChildView = child.size.height;
+  //     heightOfChild = heightOfChildView;
+  //     if(index == 0){
+  //       heightExpandView = heightOfChildView;
+  //     }
+  //     // print("size: ${heightOfChildView}");
+  //     if (index < 2){
+  //       maxHeight += heightOfChildView;
+  //     }
+  //     index++;
+  //     child = childParentData.nextSibling;
+  //   }
+  // }
+
+  @override
+  void performResize() {
+    super.performResize();
+    // RenderBox? child = firstChild;
+    // int index = 0;
+    // double maxHeight = 0;
+    // final scrollDy = scrollable.offset;
+    // final fraction = scrollDy / heightExpandView;
+    // while(child != null) {
+    //   final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
+    //   child.layout(constraints, parentUsesSize: true);
+    //   final heightOfChildView = child.size.height;
+    //   index++;
+    //   child = childParentData.nextSibling;
+    // }
+    print("resize");
+  }
+
+  // @override
+  // OffsetLayer updateCompositedLayer({covariant required OffsetLayer? oldLayer}) {
+  //   // TODO: implement updateCompositedLayer
+  //   return super.updateCompositedLayer(oldLayer);
+  // }
+
 
   @override
   void paint(PaintingContext context, Offset offset) {
@@ -142,7 +219,7 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
 
       }
       else if (index == 1) {
-        context.paintChild(child, childParentData.offset);
+        context.paintChild(child, offset + childParentData.offset);
         // print("Offset: ${childParentData.offset}, ${child.size}");
       }
       else {
@@ -150,14 +227,27 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
         final fraction = scrollDy / heightExpandView;
         final originOffset = childParentData.offset;
         final distanceX = originOffset.dx - listPositionDesX[index - 2];
-        final distanceY = originOffset.dy - 50.0;
+        final distanceY = originOffset.dy - 34;
         if (fraction <= 1) {
+          void painter(PaintingContext context, Offset offset) {
+            context.paintChild(child!, offset);
+          }
+
           final newDx = originOffset.dx - distanceX * fraction;
           final newDy = originOffset.dy - distanceY * fraction;
-          context.paintChild(child, Offset(newDx, newDy));
+          final newOffset = offset + Offset(newDx, newDy);
+          // context.paintChild(child, newOffset);
+          if (fraction == 1.0) {
+            context.pushTransform(needsCompositing, newOffset, Matrix4.identity(), painter);
+          } else {
+            context.pushOpacity(newOffset, ui.Color.getAlphaFromOpacity(1 - fraction), (PaintingContext context, Offset offset) {
+              context.pushTransform(needsCompositing, offset, Matrix4.identity(), painter);
+            });
+          }
         }
         else {
-          context.paintChild(child, Offset(listPositionDesX[index - 2].toDouble(), 50));
+          final newOffset = offset + Offset(listPositionDesX[index - 2].toDouble(), 34);
+          context.paintChild(child, newOffset);
         }
       }
       index++;
