@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
@@ -7,28 +8,44 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
   final Widget fixedView;
   final Widget extendView;
   final List<Widget> menus;
+  final List<Widget> collapseMenus;
   final ScrollController scrollController;
+  final EdgeInsets? paddingMenu;
+  final EdgeInsets? paddingCollapseMenu;
 
   CoordinatorMenuView({
     super.key,
     required this.fixedView,
     required this.extendView,
     required this.menus,
-    required this.scrollController
+    required this.scrollController,
+    this.paddingMenu,
+    this.paddingCollapseMenu,
+    this.collapseMenus = const []
   }): super(children: [
     extendView,
     fixedView,
-    ...menus
+    ...menus,
+    ...collapseMenus
   ]);
 
   @override
   RenderCoordinatorMenu createRenderObject(BuildContext context) {
-    return RenderCoordinatorMenu(scrollable: scrollController);
+    return RenderCoordinatorMenu(
+        scrollable: scrollController,
+        countMenu: menus.length * 2,
+        paddingMenu: paddingMenu,
+        paddingCollapseMenu: paddingCollapseMenu
+    );
   }
 
   @override
   void updateRenderObject(BuildContext context, covariant RenderCoordinatorMenu renderObject) {
-    renderObject._scrollable = scrollController;
+    renderObject
+      .._scrollable = scrollController
+      .._paddingMenu = paddingMenu
+      .._paddingCollapseMenu = paddingCollapseMenu
+      ..countMenu = menus.length * 2;
   }
 }
 
@@ -38,8 +55,13 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     RenderBoxContainerDefaultsMixin<RenderBox, CoordinatorMenuData>{
 
   RenderCoordinatorMenu({
-    required ScrollController scrollable
-  }): _scrollable = scrollable;
+    required ScrollController scrollable,
+    required int countMenu,
+    EdgeInsets? paddingMenu,
+    EdgeInsets? paddingCollapseMenu
+  }): _scrollable = scrollable,
+      _paddingMenu = paddingMenu,
+      _countMenu = countMenu;
 
   ScrollController _scrollable;
 
@@ -57,7 +79,36 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     }
   }
 
-  double heightExpandView = 0;
+  EdgeInsets? _paddingMenu;
+  EdgeInsets? get paddingMenu => _paddingMenu;
+  set paddingMenu(EdgeInsets? value){
+    if (value != _paddingMenu){
+      _paddingMenu = value;
+      markNeedsLayout();
+    }
+  }
+
+  EdgeInsets? _paddingCollapseMenu;
+  EdgeInsets? get paddingCollapseMenu => _paddingCollapseMenu;
+  set paddingCollapseMenu(EdgeInsets? value){
+    if (value != _paddingCollapseMenu){
+      _paddingCollapseMenu = value;
+      markNeedsLayout();
+    }
+  }
+
+  int _countMenu;
+  int get countMenu => _countMenu;
+  set countMenu(int value){
+    if (value != _countMenu){
+      _countMenu = value;
+      markNeedsLayout();
+    }
+  }
+
+  double _positionCoordinatorView = 0;
+  List<double> _menuDestinationPositionX = [];
+
   final listPositionDesX = [30, 90, 160, 220];
 
   @override
@@ -80,134 +131,105 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
   }
 
   @override
+  double computeMinIntrinsicWidth(double height) {
+    return constraints.smallest.width;
+  }
+
+  @override
+  double computeMaxIntrinsicWidth(double height) {
+    return constraints.biggest.width;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return _getIntrinsicHeight(width);
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return _getIntrinsicHeight(width);
+  }
+
+  double _getIntrinsicHeight(double width){
+    RenderBox? child = firstChild;
+    double height = 0;
+    int index = 0;
+    while(child != null){
+      final childParentData = child.parentData! as CoordinatorMenuData;
+      if (index < 2){
+        height += child.getMaxIntrinsicHeight(width);
+        child = childParentData.nextSibling;
+        index++;
+      }
+      else {
+        child = null;
+      }
+    }
+    return height;
+  }
+
+  @override
   Size computeDryLayout(BoxConstraints constraints) {
-    return Size(100, 100);
+    return _computeSize(
+        constraints: constraints,
+        layoutChild: ChildLayoutHelper.dryLayoutChild
+    );
+  }
+
+  Size _computeSize({required BoxConstraints constraints, required ChildLayouter layoutChild}){
+    if (childCount == 0){
+      return (constraints.biggest.isFinite) ? constraints.biggest : constraints.smallest;
+    }
+    double width = constraints.minWidth;
+    double height = constraints.minHeight;
+    double maxHeight = 0;
+    RenderBox? child = firstChild;
+    int index = 0;
+    while(child != null){
+      final childParentData = child.parentData! as CoordinatorMenuData;
+      if (index < 2) {
+        final Size childSize = layoutChild(child, constraints);
+        maxHeight += childSize.height;
+        height = math.max(height, maxHeight);
+      }
+      index++;
+      child = childParentData.nextSibling;
+    }
+    return Size(width, height);
   }
 
   @override
   void performLayout() {
-    final BoxConstraints constraints = this.constraints;
-    final maxWidth = constraints.maxWidth;
-    double maxHeight = 0;
-    double heightOfChild = 0;
+    size = _computeSize(
+        constraints: constraints,
+        layoutChild: ChildLayoutHelper.layoutChild,
+    );
     RenderBox? child = firstChild;
     int index = 0;
-    double fraction = 1;
-    if (heightExpandView > 0){
-      final scrollDy = scrollable.offset;
-      fraction = scrollDy / heightExpandView;
-    }
-    while(child != null) {
-      final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
-      if (child.hasSize && index >= 2){
-        print("Child da co size");
-        final maxWidth = 50 - 20 * fraction;
-        final maxHeight = 50 - 20 * fraction;
-        child.layout(BoxConstraints(maxWidth: maxWidth, maxHeight: maxHeight), parentUsesSize: true);
-      }
-      else {
-        child.layout(constraints, parentUsesSize: true);
-      }
-      final heightOfChildView = child.size.height;
-      heightOfChild = heightOfChildView;
-      if(index == 0){
-        heightExpandView = heightOfChildView;
-      }
-      // print("size: ${heightOfChildView}");
-      if (index < 2){
-        maxHeight += heightOfChildView;
-      }
-      index++;
-      child = childParentData.nextSibling;
-    }
-    // print("MaxHeight: $maxHeight");
-    size = Size(maxWidth, maxHeight);
-    child = firstChild;
-    index = 0;
     final totalMenu = childCount - 2;
-    final part = maxWidth / totalMenu;
-    int indexMenu = 0;
+    final part = constraints.maxWidth / totalMenu;
     while(child != null){
-      final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
-      // fixedView
-      if (index == 0){
+      final childParentData = child.parentData! as CoordinatorMenuData;
+      child.layout(constraints, parentUsesSize: true);
+      //  set extendView
+      if(index == 0){
+        _positionCoordinatorView = child.size.height;
         childParentData.offset = Offset.zero;
       }
-      // extendView
+      // set fixView
       else if (index == 1){
-        // childParentData.offset = Offset(0, heightOfFixedView);
         childParentData.offset = Offset.zero;
       }
-      // menus
+      // set menu view
       else {
-        final x = part * indexMenu + part / 4;
-        final y = size.height - 16 - heightOfChild;
+        final x = part * (index - 2) + part / 4;
+        final y = size.height - 16 - child.size.height;
         childParentData.offset = Offset(x, y);
-        // print("x: $x, y: $y");
-        indexMenu++;
       }
       index++;
       child = childParentData.nextSibling;
     }
   }
-
-  // @override
-  // Size computeDryLayout(BoxConstraints constraints) {
-  //   final BoxConstraints constraints = this.constraints;
-  //   final maxWidth = constraints.maxWidth;
-  //   double maxHeight = 0;
-  //   double heightOfChild = 0;
-  //   RenderBox? child = firstChild;
-  //   int index = 0;
-  //   while(child != null) {
-  //     final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
-  //     if (child.hasSize){
-  //       final scrollDy = scrollable.offset;
-  //       final fraction = scrollDy / heightExpandView;
-  //       final size = 50 - fraction * 20;
-  //       child.layout(BoxConstraints(maxHeight: size, maxWidth: size));
-  //     }
-  //     else {
-  //       child.layout(constraints, parentUsesSize: true);
-  //     }
-  //     final heightOfChildView = child.size.height;
-  //     heightOfChild = heightOfChildView;
-  //     if(index == 0){
-  //       heightExpandView = heightOfChildView;
-  //     }
-  //     // print("size: ${heightOfChildView}");
-  //     if (index < 2){
-  //       maxHeight += heightOfChildView;
-  //     }
-  //     index++;
-  //     child = childParentData.nextSibling;
-  //   }
-  // }
-
-  @override
-  void performResize() {
-    super.performResize();
-    // RenderBox? child = firstChild;
-    // int index = 0;
-    // double maxHeight = 0;
-    // final scrollDy = scrollable.offset;
-    // final fraction = scrollDy / heightExpandView;
-    // while(child != null) {
-    //   final CoordinatorMenuData childParentData = child.parentData! as CoordinatorMenuData;
-    //   child.layout(constraints, parentUsesSize: true);
-    //   final heightOfChildView = child.size.height;
-    //   index++;
-    //   child = childParentData.nextSibling;
-    // }
-    print("resize");
-  }
-
-  // @override
-  // OffsetLayer updateCompositedLayer({covariant required OffsetLayer? oldLayer}) {
-  //   // TODO: implement updateCompositedLayer
-  //   return super.updateCompositedLayer(oldLayer);
-  // }
-
 
   @override
   void paint(PaintingContext context, Offset offset) {
@@ -216,15 +238,14 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     while(child != null){
       final childParentData = child.parentData as CoordinatorMenuData;
       if (index == 0){
-
+        // do not draw extend View
       }
       else if (index == 1) {
         context.paintChild(child, offset + childParentData.offset);
-        // print("Offset: ${childParentData.offset}, ${child.size}");
       }
       else {
         final scrollDy = scrollable.offset;
-        final fraction = scrollDy / heightExpandView;
+        final fraction = scrollDy / _positionCoordinatorView;
         final originOffset = childParentData.offset;
         final distanceX = originOffset.dx - listPositionDesX[index - 2];
         final distanceY = originOffset.dy - 34;
@@ -264,18 +285,12 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     // final point2 = Offset(size.width, 50);
     // canvas.drawLine(point1, point2, barPaint);
     // canvas.restore();
-  }
 
-  void cal(){
-    // Get the size of the scrollable area.
-    final viewportDimension = scrollable.position.viewportDimension;
-    print("ViewPortDimension: $viewportDimension");
-    // Calculate the global position of this list item.
-    // final scrollableBox = scrollable.position.context.notificationContext?.findRenderObject() as RenderBox;
-    // final backgroundOffset =
-    // localToGlobal(size.centerLeft(Offset.zero), ancestor: scrollableBox);
-    print("Scroll Offset: ${scrollable.offset}");
-    // final scrollFraction =
-    // (backgroundOffset.dy / viewportDimension).clamp(0.0, 1.0);
-  }
+    List<double> _computeDestinationPosition(Size size, EdgeInsets? padding, double widthChild){
+      final edgeInset = padding ?? EdgeInsets.zero;
+      final maxWidthOfView = size.width - edgeInset.left - edgeInset.right;
+      return List.generate(_countMenu ~/ 2, (index) {
+        edgeInset.left + index * widthChild
+      });
+    }
 }
