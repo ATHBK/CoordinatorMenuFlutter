@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'custom_scroll_view.dart';
+import 'coordinator_view.dart';
+import 'sliver_fill_remain_need_to_scroll.dart';
 
 class CoordinatorMenuWidget extends StatefulWidget {
 
@@ -8,13 +9,19 @@ class CoordinatorMenuWidget extends StatefulWidget {
   final Widget extendView;
   final Widget fixedView;
   final List<Widget> menus;
+  final List<Widget> collapseMenus;
+  final EdgeInsets? paddingMenu;
+  final EdgeInsets? paddingCollapseMenu;
 
   const CoordinatorMenuWidget({
     super.key,
     required this.functionView,
     required this.extendView,
     required this.fixedView,
-    required this.menus
+    required this.menus,
+    this.collapseMenus = const [],
+    this.paddingMenu,
+    this.paddingCollapseMenu
   });
 
   @override
@@ -45,11 +52,13 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
           child: Stack(
             children: [
               CustomScrollView(
+                physics: const AlwaysScrollableScrollPhysics(),
                 controller: _scrollController,
                 slivers: [
                   SliverToBoxAdapter(child: widget.fixedView),
                   SliverToBoxAdapter(child: widget.extendView),
-                  widget.functionView
+                  widget.functionView,
+                  SliverFillRemainNeedToScroll(child: widget.extendView),
                 ],
               ),
               CoordinatorMenuView(
@@ -57,6 +66,9 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
                 fixedView: widget.fixedView,
                 extendView: widget.extendView,
                 menus: widget.menus,
+                collapseMenus: widget.collapseMenus,
+                paddingMenu: widget.paddingMenu,
+                paddingCollapseMenu: widget.paddingCollapseMenu,
               )
             ],
           ),
