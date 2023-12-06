@@ -37,7 +37,9 @@ class _RenderSliverRemainNeedToScroll extends RenderSliverSingleBoxAdapter {
     // The remaining space in the viewportMainAxisExtent. Can be <= 0 if we have
     // scrolled beyond the extent of the screen.
     double extent = constraints.viewportMainAxisExtent - constraints.precedingScrollExtent;
-
+    // print("SliverConstaints 1 : $constraints");
+    // print("SliverConstaints 2: ${constraints.precedingScrollExtent}");
+    // print("SliverConstaints 3: ${constraints.viewportMainAxisExtent}");
     if (child != null) {
       final double childExtent;
       switch (constraints.axis) {
@@ -50,7 +52,15 @@ class _RenderSliverRemainNeedToScroll extends RenderSliverSingleBoxAdapter {
       // If the childExtent is greater than the computed extent, we want to use
       // that instead of potentially cutting off the child. This allows us to
       // safely specify a maxExtent.
-      extent = extent + childExtent;
+      if (extent >= 0) {
+        extent = extent + childExtent;
+      }
+      else if (extent.abs() < childExtent){
+        extent = childExtent;
+      }
+      else {
+        extent = 0;
+      }
       child!.layout(constraints.asBoxConstraints(
         minExtent: extent,
         maxExtent: extent,

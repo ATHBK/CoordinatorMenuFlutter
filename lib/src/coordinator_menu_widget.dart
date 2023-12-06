@@ -12,6 +12,7 @@ class CoordinatorMenuWidget extends StatefulWidget {
   final List<Widget> collapseMenus;
   final EdgeInsets? paddingMenu;
   final EdgeInsets? paddingCollapseMenu;
+  final bool alphaEffect;
 
   const CoordinatorMenuWidget({
     super.key,
@@ -21,7 +22,8 @@ class CoordinatorMenuWidget extends StatefulWidget {
     required this.menus,
     this.collapseMenus = const [],
     this.paddingMenu,
-    this.paddingCollapseMenu
+    this.paddingCollapseMenu,
+    this.alphaEffect = true
   });
 
   @override
@@ -69,6 +71,7 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
                 collapseMenus: widget.collapseMenus,
                 paddingMenu: widget.paddingMenu,
                 paddingCollapseMenu: widget.paddingCollapseMenu,
+                alphaEffect: widget.alphaEffect,
               )
             ],
           ),

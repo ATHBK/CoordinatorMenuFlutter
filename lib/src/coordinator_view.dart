@@ -12,6 +12,7 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
   final ScrollController scrollController;
   final EdgeInsets? paddingMenu;
   final EdgeInsets? paddingCollapseMenu;
+  final bool alphaEffect;
 
   CoordinatorMenuView({
     super.key,
@@ -21,6 +22,7 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
     required this.scrollController,
     this.paddingMenu,
     this.paddingCollapseMenu,
+    this.alphaEffect = true,
     this.collapseMenus = const []
   }): super(children: [
     extendView,
@@ -36,7 +38,8 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
         countMenu: menus.length,
         countCollapseMenu: collapseMenus.length,
         paddingMenu: paddingMenu,
-        paddingCollapseMenu: paddingCollapseMenu
+        paddingCollapseMenu: paddingCollapseMenu,
+        alphaEffect: alphaEffect
     );
   }
 
@@ -47,6 +50,7 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
       .._paddingMenu = paddingMenu
       .._paddingCollapseMenu = paddingCollapseMenu
       ..countMenu = menus.length
+      ..alphaEffect = alphaEffect
       ..countCollapseMenu = collapseMenus.length;
 
   }
@@ -61,12 +65,14 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     required ScrollController scrollable,
     required int countMenu,
     required int countCollapseMenu,
+    bool alphaEffect = true,
     EdgeInsets? paddingMenu,
     EdgeInsets? paddingCollapseMenu
   }): _scrollable = scrollable,
       _paddingMenu = paddingMenu,
       _paddingCollapseMenu = paddingCollapseMenu,
       _countMenu = countMenu,
+      _alphaEffect = alphaEffect,
       _countCollapseMenu = countCollapseMenu;
 
 
@@ -119,6 +125,15 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     if (value != _countCollapseMenu){
       _countCollapseMenu = value;
       markNeedsLayout();
+    }
+  }
+
+  bool _alphaEffect;
+  bool get alphaEffect => _alphaEffect;
+  set alphaEffect(bool value){
+    if (value != _alphaEffect){
+      _alphaEffect = value;
+      markNeedsPaint();
     }
   }
 
@@ -240,7 +255,8 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     RenderBox? child = firstChild;
     int index = 0;
     final totalMenu = _countMenu;
-    final part = constraints.maxWidth / totalMenu;
+    final paddingMenu = _paddingMenu ?? EdgeInsets.zero;
+    final part = (constraints.maxWidth - paddingMenu.left - paddingMenu.right) / totalMenu;
     double widthMenu = 0;
     double heightMenu = 0;
     double widthCollapseMenu = 0;
@@ -262,7 +278,7 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       }
       // set menu view
       else if (index - 2 < _countMenu){
-        final x = part * (index - 2) + part / 4;
+        final x = paddingMenu.left + part * (index - 2) + part / 4;
         final y = size.height - child.size.height - (_paddingMenu?.bottom ?? 16);
         childParentData.offset = Offset(x, y);
         widthMenu = math.max(widthMenu, child.size.width);
@@ -276,7 +292,7 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       }
       else {
         // collapse menu
-        final x = part * (index - 2 - countMenu) + part / 4;
+        final x = paddingMenu.left + part * (index - 2 - countMenu) + part / 4;
         final y = size.height - child.size.height - (_paddingMenu?.bottom ?? 16);
         childParentData.offset = Offset(x, y);
         widthCollapseMenu = math.max(widthCollapseMenu, child.size.width);
@@ -321,17 +337,6 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       child = childParentData.nextSibling;
     }
   }
-    // final canvas = context.canvas;
-    // canvas.save();
-    // canvas.translate(offset.dx, offset.dy);
-    // // paint bar
-    // final barPaint = Paint()
-    //   ..color = Colors.black
-    //   ..strokeWidth = 100;
-    // final point1 = Offset(0, 60);
-    // final point2 = Offset(size.width, 50);
-    // canvas.drawLine(point1, point2, barPaint);
-    // canvas.restore();
 
   void _paintMenu(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, CoordinatorMenuData childParentData){
     final originOffset = childParentData.offset;
@@ -367,12 +372,20 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
             scaleY = (1 + _rateHeight) - _rateHeight * fraction;
           }
         }
-        context.pushOpacity(
-            newOffset, ui.Color.getAlphaFromOpacity(opacity), (
-            PaintingContext context, Offset offset) {
+        if (_alphaEffect) {
+          context.pushOpacity(
+              newOffset, ui.Color.getAlphaFromOpacity(opacity), (
+              PaintingContext context, Offset offset) {
+            context.pushTransform(
+                needsCompositing, offset,
+                Matrix4.identity().scaled(scaleX, scaleY), painter);
+          });
+        }
+        else {
           context.pushTransform(
-              needsCompositing, offset, Matrix4.identity().scaled(scaleX, scaleY), painter);
-        });
+              needsCompositing, newOffset,
+              Matrix4.identity().scaled(scaleX, scaleY), painter);
+        }
       }
     }
     else {
@@ -395,14 +408,14 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     return yOfFixView + heightOfFixView / 2 - heightChild / 2;
   }
 
-  void _finishMove(double fraction){
+  void _finishMove(double fraction) async {
     if (fraction < 1 && fraction >= 0.1 && _scrollable.position.userScrollDirection == ScrollDirection.reverse) {
       // up
-      _scrollable.animateTo(_positionCoordinatorView, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+      await _scrollable.animateTo(_positionCoordinatorView, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
     }
     else if (fraction <= 0.9 && fraction > 0 && _scrollable.position.userScrollDirection == ScrollDirection.forward){
       //down
-      _scrollable.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      await _scrollable.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
     }
   }
 

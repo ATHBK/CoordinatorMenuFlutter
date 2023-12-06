@@ -97,6 +97,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   height: 100,
                   color: Colors.blue,
                 ),
+                alphaEffect: true,
+                paddingMenu: const EdgeInsets.symmetric(vertical: 30, horizontal: 100),
+                paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 50),
                 menus: [
                   Container(
                     width: 50,
@@ -118,7 +121,30 @@ class _MyHomePageState extends State<MyHomePage> {
                     height: 50,
                     color: Colors.red,
                   )
-                ])));
+                ],
+                collapseMenus: [
+                  Container(
+                    width: 30,
+                    height: 30,
+                    color: Colors.red,
+                  ),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    color: Colors.red,
+                  ),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    color: Colors.red,
+                  ),
+                  Container(
+                    width: 30,
+                    height: 30,
+                    color: Colors.red,
+                  )
+                ],
+            )));
   }
 
 
