@@ -13,6 +13,9 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
   final EdgeInsets? paddingMenu;
   final EdgeInsets? paddingCollapseMenu;
   final bool alphaEffect;
+  final Widget? backgroundFixed;
+  final Widget? backgroundExtend;
+  final Widget? backgroundMenu;
 
   CoordinatorMenuView({
     super.key,
@@ -23,12 +26,18 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
     this.paddingMenu,
     this.paddingCollapseMenu,
     this.alphaEffect = true,
-    this.collapseMenus = const []
+    this.collapseMenus = const [],
+    this.backgroundFixed,
+    this.backgroundMenu,
+    this.backgroundExtend
   }): super(children: [
+    backgroundFixed ?? Container(color: Colors.transparent),
+    backgroundExtend ?? Container(color: Colors.transparent,),
+    backgroundMenu ?? Container(color: Colors.transparent,),
     extendView,
     fixedView,
     ...menus,
-    ...collapseMenus
+    ...collapseMenus,
   ]);
 
   @override
@@ -143,6 +152,9 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
   double _rateWidth = 1;
   double _rateHeight = 1;
 
+  final positionFirstOfFixAndExtendView = 3;
+  final positionFirstOfMenu = 5;
+
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
@@ -204,7 +216,10 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     int index = 0;
     while(child != null){
       final childParentData = child.parentData! as CoordinatorMenuData;
-      if (index < 2){
+      if(index < positionFirstOfFixAndExtendView){
+        // do nothing;
+      }
+      else if (index < positionFirstOfMenu){
         height += child.getMaxIntrinsicHeight(width);
         child = childParentData.nextSibling;
         index++;
@@ -235,10 +250,12 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     int index = 0;
     while(child != null){
       final childParentData = child.parentData! as CoordinatorMenuData;
-      if (index < 2) {
+      if (index < positionFirstOfMenu) {
         final Size childSize = layoutChild(child, constraints);
-        maxHeight += childSize.height;
-        height = math.max(height, maxHeight);
+        if (index >= positionFirstOfFixAndExtendView) {
+          maxHeight += childSize.height;
+          height = math.max(height, maxHeight);
+        }
       }
       index++;
       child = childParentData.nextSibling;

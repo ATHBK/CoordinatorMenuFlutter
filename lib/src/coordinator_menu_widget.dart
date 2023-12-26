@@ -8,6 +8,9 @@ class CoordinatorMenuWidget extends StatefulWidget {
   final Widget functionView;
   final Widget extendView;
   final Widget fixedView;
+  final Widget? backgroundFixed;
+  final Widget? backgroundExtend;
+  final Widget? backgroundMenu;
   final List<Widget> menus;
   final List<Widget> collapseMenus;
   final EdgeInsets? paddingMenu;
@@ -23,7 +26,10 @@ class CoordinatorMenuWidget extends StatefulWidget {
     this.collapseMenus = const [],
     this.paddingMenu,
     this.paddingCollapseMenu,
-    this.alphaEffect = true
+    this.alphaEffect = true,
+    this.backgroundFixed,
+    this.backgroundExtend,
+    this.backgroundMenu
   });
 
   @override

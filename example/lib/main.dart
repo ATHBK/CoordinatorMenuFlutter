@@ -76,76 +76,84 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-        body: Container(
-            color: Colors.pink,
-            child: CoordinatorMenuWidget(
-                functionView: SliverList(
-                    delegate: SliverChildBuilderDelegate((context, index) {
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                    child: Container(
-                      color: Colors.green,
-                      height: 50,
-                    ),
-                  );
-                }, childCount: 20)),
-                extendView: Container(
-                  height: 200,
-                  color: Colors.yellow,
-                ),
-                fixedView: Container(
-                  height: 100,
-                  color: Colors.blue,
-                ),
-                alphaEffect: true,
-                paddingMenu: const EdgeInsets.symmetric(vertical: 30, horizontal: 100),
-                paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 50),
-                menus: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    color: Colors.red,
-                  ),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    color: Colors.red,
-                  ),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    color: Colors.red,
-                  ),
-                  Container(
-                    width: 50,
-                    height: 50,
-                    color: Colors.red,
-                  )
-                ],
-                collapseMenus: [
-                  Container(
-                    width: 30,
-                    height: 30,
-                    color: Colors.red,
-                  ),
-                  Container(
-                    width: 30,
-                    height: 30,
-                    color: Colors.red,
-                  ),
-                  Container(
-                    width: 30,
-                    height: 30,
-                    color: Colors.red,
-                  ),
-                  Container(
-                    width: 30,
-                    height: 30,
-                    color: Colors.red,
-                  )
-                ],
-            )));
+        body: CoordinatorMenuWidget(
+            functionView: _getListFunction(),
+            extendView: _getExtendView(),
+            fixedView: _getFixedView(),
+            alphaEffect: true,
+            paddingMenu: const EdgeInsets.symmetric(vertical: 16),
+            paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 50),
+            menus: [
+              _getItemMenu(Icons.catching_pokemon, "Catch"),
+              _getItemMenu(Icons.catching_pokemon, "Cloud"),
+              _getItemMenu(Icons.catching_pokemon, "Download"),
+              _getItemMenu(Icons.catching_pokemon, "Upload")
+            ],
+            collapseMenus: [
+              _getItemMenuCollapse(Icons.catching_pokemon),
+              _getItemMenuCollapse(Icons.cloud_circle),
+              _getItemMenuCollapse(Icons.cloud_download),
+              _getItemMenuCollapse(Icons.cloud_upload),
+            ],
+        ));
   }
 
+
+  Widget _getItemMenu(IconData iconData, String text){
+    return Container(
+      height: 50.0,
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(iconData),
+          Text(text, style: const TextStyle(fontSize: 14, color: Colors.black54))
+        ],
+      ),
+    );
+  }
+
+  Widget _getItemMenuCollapse(IconData iconData){
+    return Icon(
+      iconData,
+      color: Colors.white,
+      size: 30.0,
+    );
+  }
+
+  Widget _getFixedView(){
+    return Container(
+      height: 50.0,
+      color: Colors.blue,
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.account_circle),
+          Icon(Icons.circle_notifications),
+        ],
+      ),
+    );
+  }
+
+  Widget _getExtendView(){
+    return Container(
+      height: 200,
+      color: Colors.blue,
+    );
+  }
+
+  Widget _getListFunction() {
+    return SliverGrid.builder(gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+        crossAxisCount: 4
+    ), itemBuilder: (context, index) {
+      return const Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(Icons.account_balance),
+          Text("Function")
+        ],
+      );
+    },
+    itemCount: 4);
+  }
 
 }
