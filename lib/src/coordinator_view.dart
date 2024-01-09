@@ -5,37 +5,39 @@ import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
 class CoordinatorMenuView extends MultiChildRenderObjectWidget {
 
-  final Widget fixedView;
-  final Widget extendView;
+  final Widget headerView;
+  final Widget background;
   final List<Widget> menus;
   final List<Widget> collapseMenus;
   final ScrollController scrollController;
   final EdgeInsets? paddingMenu;
   final EdgeInsets? paddingCollapseMenu;
   final bool alphaEffect;
-  final Widget? backgroundFixed;
-  final Widget? backgroundExtend;
+  final Widget? middleView;
   final Widget? backgroundMenu;
+  final Widget? backgroundHeaderView;
+  final ValueChanged<double>? onFinishProgress;
 
   CoordinatorMenuView({
     super.key,
-    required this.fixedView,
-    required this.extendView,
+    required this.headerView,
+    required this.background,
     required this.menus,
     required this.scrollController,
     this.paddingMenu,
     this.paddingCollapseMenu,
     this.alphaEffect = true,
     this.collapseMenus = const [],
-    this.backgroundFixed,
+    this.middleView,
     this.backgroundMenu,
-    this.backgroundExtend
+    this.onFinishProgress,
+    this.backgroundHeaderView
   }): super(children: [
-    backgroundFixed ?? Container(color: Colors.transparent),
-    backgroundExtend ?? Container(color: Colors.transparent,),
+    background,
+    backgroundHeaderView ?? const SizedBox.shrink(),
+    headerView,
+    middleView ?? const SizedBox.shrink(),
     backgroundMenu ?? Container(color: Colors.transparent,),
-    extendView,
-    fixedView,
     ...menus,
     ...collapseMenus,
   ]);
@@ -48,7 +50,8 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
         countCollapseMenu: collapseMenus.length,
         paddingMenu: paddingMenu,
         paddingCollapseMenu: paddingCollapseMenu,
-        alphaEffect: alphaEffect
+        alphaEffect: alphaEffect,
+        onFinishProgress: onFinishProgress
     );
   }
 
@@ -60,6 +63,7 @@ class CoordinatorMenuView extends MultiChildRenderObjectWidget {
       .._paddingCollapseMenu = paddingCollapseMenu
       ..countMenu = menus.length
       ..alphaEffect = alphaEffect
+      ..onFinishProgress = onFinishProgress
       ..countCollapseMenu = collapseMenus.length;
 
   }
@@ -76,14 +80,15 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     required int countCollapseMenu,
     bool alphaEffect = true,
     EdgeInsets? paddingMenu,
-    EdgeInsets? paddingCollapseMenu
+    EdgeInsets? paddingCollapseMenu,
+    ValueChanged<double>? onFinishProgress
   }): _scrollable = scrollable,
       _paddingMenu = paddingMenu,
       _paddingCollapseMenu = paddingCollapseMenu,
       _countMenu = countMenu,
       _alphaEffect = alphaEffect,
-      _countCollapseMenu = countCollapseMenu;
-
+      _countCollapseMenu = countCollapseMenu,
+      _onFinishProgress = onFinishProgress;
 
   ScrollController _scrollable;
 
@@ -146,14 +151,29 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     }
   }
 
-  double _positionCoordinatorView = 0;
+  ValueChanged<double>? _onFinishProgress;
+  ValueChanged<double>? get onFinishProgress => _onFinishProgress;
+  set onFinishProgress(ValueChanged<double>? value){
+    if (value != _onFinishProgress){
+      _onFinishProgress = value;
+    }
+  }
+
   List<double> _menuDestinationPositionX = [];
   double _menuDestinationPositionY = 16;
   double _rateWidth = 1;
   double _rateHeight = 1;
 
-  final positionFirstOfFixAndExtendView = 3;
-  final positionFirstOfMenu = 5;
+  double _positionCoordinatorView = 0;
+  double _positionBgHeaderView = 0;
+  double _positionBgMenuView = 0;
+  final int _indexBgHeaderView = 1;
+  final int _indexHeaderView = 2;
+  final int _indexBgMenu = 4;
+  final int _indexFirstOfMenu = 5;
+  double _heightBg = 0;
+  double _heightBgMenu = 0;
+  double _heightHeaderView = 0;
 
   @override
   void attach(PipelineOwner owner) {
@@ -168,6 +188,7 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       if (hasSize) {
         final scrollDy = scrollable.offset;
         final fraction = scrollDy / _positionCoordinatorView;
+        // _onFinishProgress?.call(fraction);
         _finishMove(fraction);
       }
 
@@ -213,22 +234,39 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
   double _getIntrinsicHeight(double width){
     RenderBox? child = firstChild;
     double height = 0;
+    double heightBg = 0;
+    double heightBgMenu = 0;
     int index = 0;
     while(child != null){
       final childParentData = child.parentData! as CoordinatorMenuData;
-      if(index < positionFirstOfFixAndExtendView){
-        // do nothing;
+      // background
+      if (index == 0){
+        heightBg = child.getMaxIntrinsicHeight(width);
       }
-      else if (index < positionFirstOfMenu){
+      else if (index < _indexFirstOfMenu){
         height += child.getMaxIntrinsicHeight(width);
+        if (index == _indexBgHeaderView){
+          // not cal
+          height = height - child.getMaxIntrinsicHeight(width);
+        }
+        // bg menu view
+        else if (index == _indexBgMenu){
+          heightBgMenu = child.getMaxIntrinsicHeight(width);
+        }
         child = childParentData.nextSibling;
         index++;
       }
       else {
+        // first menu
+        if (index == _indexFirstOfMenu){
+          if (heightBgMenu == 0){
+            height += child.getMaxIntrinsicHeight(width);
+          }
+        }
         child = null;
       }
     }
-    return height;
+    return math.max(heightBg, height);
   }
 
   @override
@@ -250,16 +288,38 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     int index = 0;
     while(child != null){
       final childParentData = child.parentData! as CoordinatorMenuData;
-      if (index < positionFirstOfMenu) {
-        final Size childSize = layoutChild(child, constraints);
-        if (index >= positionFirstOfFixAndExtendView) {
+      final Size childSize = layoutChild(child, constraints);
+      // bg
+      if (index == 0){
+        _heightBg = childSize.height;
+      }
+      else if (index < _indexFirstOfMenu) {
           maxHeight += childSize.height;
-          height = math.max(height, maxHeight);
+          if (index == _indexBgHeaderView){
+            // not cal bg header view
+            maxHeight = maxHeight - childSize.height;
+          }
+          else if (index == _indexHeaderView){
+            _heightHeaderView = childSize.height;
+          }
+          // menu Bg
+          else if (index == _indexBgMenu){
+            _heightBgMenu = childSize.height;
+          }
+      }
+      else {
+        // first menu
+        if (index == _indexFirstOfMenu){
+          if (_heightBgMenu == 0){
+            final paddingMenu = _paddingMenu ?? EdgeInsets.zero;
+            maxHeight += childSize.height + paddingMenu.bottom + paddingMenu.top;
+          }
         }
       }
       index++;
       child = childParentData.nextSibling;
     }
+    height = math.max(_heightBg, maxHeight);
     return Size(width, height);
   }
 
@@ -280,22 +340,42 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     double heightCollapseMenu = 0;
     double heightFixView = 0;
     int countCollapseMenu = _countCollapseMenu;
+    _positionCoordinatorView = size.height;
+    _positionBgMenuView = size.height / 2;
+
     while(child != null){
       final childParentData = child.parentData! as CoordinatorMenuData;
-      child.layout(constraints, parentUsesSize: true);
-      //  set extendView
-      if(index == 0){
-        _positionCoordinatorView = child.size.height;
+      if (index == _indexBgHeaderView){
+        child.layout(constraints.copyWith(maxHeight: _heightHeaderView), parentUsesSize: true);
+      }
+      else {
+        child.layout(constraints, parentUsesSize: true);
+      }
+      // bg
+      if (index == 0){
         childParentData.offset = Offset.zero;
       }
-      // set fixView
-      else if (index == 1){
+      // bg header view
+      else if (index == _indexBgHeaderView){
+        childParentData.offset = Offset.zero;
+      }
+      // fixed view
+      else if (index == _indexHeaderView){
         childParentData.offset = Offset.zero;
         heightFixView = child.size.height;
+        _positionBgHeaderView = size.height - heightFixView;
+      }
+      // middle view
+      else if (index == 3){
+        childParentData.offset = Offset.zero;
+      }
+      // bg Menu
+      else if (index == _indexBgMenu){
+        childParentData.offset = Offset(0, _positionCoordinatorView - _heightBgMenu);
       }
       // set menu view
-      else if (index - 2 < _countMenu){
-        final x = paddingMenu.left + part * (index - 2) + part / 4;
+      else if (index - _indexFirstOfMenu < _countMenu){
+        final x = paddingMenu.left + part * (index - _indexFirstOfMenu) + part / 4;
         final y = size.height - child.size.height - (_paddingMenu?.bottom ?? 16);
         childParentData.offset = Offset(x, y);
         widthMenu = math.max(widthMenu, child.size.width);
@@ -309,7 +389,7 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       }
       else {
         // collapse menu
-        final x = paddingMenu.left + part * (index - 2 - countMenu) + part / 4;
+        final x = paddingMenu.left + part * (index - _indexFirstOfMenu - countMenu) + part / 4;
         final y = size.height - child.size.height - (_paddingMenu?.bottom ?? 16);
         childParentData.offset = Offset(x, y);
         widthCollapseMenu = math.max(widthCollapseMenu, child.size.width);
@@ -334,24 +414,62 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
       final childParentData = child.parentData as CoordinatorMenuData;
       final scrollDy = scrollable.offset;
       final fraction = scrollDy / _positionCoordinatorView;
-      if (index == 0) {
+      // _onFinishProgress?.call(fraction);
+      if (index == 0 || index == 3) {
         // do not draw extend View
       }
-      else if (index == 1) {
+      else if (index == _indexBgHeaderView){
+        final fractionHeaderView = scrollDy / _positionBgHeaderView;
+        _paintBgHeaderView(context, offset, fractionHeaderView, index, child, childParentData);
+      }
+      // draw fixed view
+      else if (index == _indexHeaderView) {
         context.paintChild(child, offset + childParentData.offset);
       }
-      else if (index - 2 < _countMenu) {
+      // backgroundMenu
+      else if (index == _indexBgMenu){
+        final fractionBgMenu = scrollDy / _positionBgMenuView;
+        _paintBgMenu(context, offset, fractionBgMenu, index, child, childParentData);
+      }
+      else if (index - _indexFirstOfMenu < _countMenu) {
         if (fraction < 0.7 || _countCollapseMenu == 0) {
-          _paintMenu(context, offset, fraction, index - 2, child, childParentData);
+          _paintMenu(context, offset, fraction, index - _indexFirstOfMenu, child, childParentData);
         }
       }
-      else if (index - (2 + _countMenu) < _countCollapseMenu){
+      else if (index - (_indexFirstOfMenu + _countMenu) < _countCollapseMenu){
         if (fraction >= 0.7){
-          _paintMenu(context, offset, fraction, index - (2 + _countMenu), child, childParentData);
+          _paintMenu(context, offset, fraction, index - (_indexFirstOfMenu + _countMenu), child, childParentData);
         }
       }
       index++;
       child = childParentData.nextSibling;
+    }
+  }
+
+  void _paintBgHeaderView(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, CoordinatorMenuData childParentData){
+    print("fraction bg header: $fraction");
+    if (fraction >= 1){
+      context.paintChild(child, offset + childParentData.offset);
+    }
+    else if (fraction > 0) {
+      context.pushOpacity(
+          offset, ui.Color.getAlphaFromOpacity(fraction), (
+          PaintingContext context, Offset offset) {
+        context.paintChild(child, offset + childParentData.offset);
+      });
+    }
+  }
+
+  void _paintBgMenu(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, CoordinatorMenuData childParentData){
+    if (fraction <= 0){
+      context.paintChild(child, offset + childParentData.offset);
+    }
+    else if (fraction < 1) {
+      context.pushOpacity(
+          offset, ui.Color.getAlphaFromOpacity(1 - fraction), (
+          PaintingContext context, Offset offset) {
+        context.paintChild(child, offset + childParentData.offset);
+      });
     }
   }
 
@@ -425,14 +543,27 @@ class RenderCoordinatorMenu extends RenderBox with ContainerRenderObjectMixin<Re
     return yOfFixView + heightOfFixView / 2 - heightChild / 2;
   }
 
+  Future<void>? scrollAnimateToRunning;
+
   void _finishMove(double fraction) async {
+
     if (fraction < 1 && fraction >= 0.1 && _scrollable.position.userScrollDirection == ScrollDirection.reverse) {
       // up
-      await _scrollable.animateTo(_positionCoordinatorView, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+      Future.delayed(Duration.zero, () async {
+        if(scrollAnimateToRunning != null) {
+          await scrollAnimateToRunning;
+        }
+        scrollAnimateToRunning = _scrollable.animateTo(_positionCoordinatorView, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+      });
     }
     else if (fraction <= 0.9 && fraction > 0 && _scrollable.position.userScrollDirection == ScrollDirection.forward){
       //down
-      await _scrollable.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      Future.delayed(Duration.zero, () async {
+        if(scrollAnimateToRunning != null) {
+          await scrollAnimateToRunning;
+        }
+        scrollAnimateToRunning = _scrollable.animateTo(0, duration: const Duration(milliseconds: 200), curve: Curves.easeOut);
+      });
     }
   }
 

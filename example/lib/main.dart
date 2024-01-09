@@ -56,7 +56,21 @@ class MyHomePage extends StatefulWidget {
   State<MyHomePage> createState() => _MyHomePageState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateMixin{
+  
+  late AnimationController _controller;
+  
+  @override
+  void initState() {
+    super.initState();
+    _controller = AnimationController(vsync: this);
+  }
+  
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -78,10 +92,12 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
         body: CoordinatorMenuWidget(
             functionView: _getListFunction(),
-            extendView: _getExtendView(),
-            fixedView: _getFixedView(),
+            background: _getExtendView(),
+            headerView: _getHeaderView(),
+            backgroundHeaderView: _getBgHeaderView(),
+            backgroundMenu: _getBgMenu(),
             alphaEffect: true,
-            paddingMenu: const EdgeInsets.symmetric(vertical: 16),
+            paddingMenu: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
             paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 50),
             menus: [
               _getItemMenu(Icons.catching_pokemon, "Catch"),
@@ -95,6 +111,10 @@ class _MyHomePageState extends State<MyHomePage> {
               _getItemMenuCollapse(Icons.cloud_download),
               _getItemMenuCollapse(Icons.cloud_upload),
             ],
+            onFinishProgress: (value) {
+              print("value: $value");
+              _controller.value = value;
+            },
         ));
   }
 
@@ -120,10 +140,10 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
-  Widget _getFixedView(){
-    return Container(
+  Widget _getHeaderView(){
+    return const SizedBox(
+      width: double.maxFinite,
       height: 50.0,
-      color: Colors.blue,
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
@@ -134,10 +154,24 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  Widget _getBgHeaderView(){
+    return Container(
+      width: double.maxFinite,
+      height: 50.0,
+      color: Colors.blue,
+    );
+  }
+
+
   Widget _getExtendView(){
     return Container(
-      height: 200,
-      color: Colors.blue,
+      width: double.infinity,
+      height: 250,
+      child: Column(
+        children: [
+          Image.asset("assets/images/bg.png", width: double.infinity, height: 170, fit: BoxFit.fill),
+        ],
+      ),
     );
   }
 
@@ -145,15 +179,28 @@ class _MyHomePageState extends State<MyHomePage> {
     return SliverGrid.builder(gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4
     ), itemBuilder: (context, index) {
-      return const Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.account_balance),
-          Text("Function")
-        ],
+      return Container(
+        color: Colors.white,
+        child: const Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.account_balance),
+            Text("Function")
+          ],
+        ),
       );
     },
     itemCount: 4);
   }
 
+  Widget _getBgMenu(){
+    return Container(
+      height: 100,
+      margin: EdgeInsets.symmetric(horizontal: 16),
+      decoration: BoxDecoration(
+        color: Colors.red,
+        borderRadius: BorderRadius.circular(10)
+      ),
+    );
+  }
 }

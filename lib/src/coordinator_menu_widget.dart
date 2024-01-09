@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_coordinator_menu/src/extra_view_in_scroll_view.dart';
 
 import 'coordinator_view.dart';
 import 'sliver_fill_remain_need_to_scroll.dart';
@@ -6,30 +7,34 @@ import 'sliver_fill_remain_need_to_scroll.dart';
 class CoordinatorMenuWidget extends StatefulWidget {
 
   final Widget functionView;
-  final Widget extendView;
-  final Widget fixedView;
-  final Widget? backgroundFixed;
-  final Widget? backgroundExtend;
+  final Widget headerView;
+  final Widget background;
+  final Widget? backgroundHeaderView;
+  final Widget? middleView;
   final Widget? backgroundMenu;
   final List<Widget> menus;
   final List<Widget> collapseMenus;
   final EdgeInsets? paddingMenu;
   final EdgeInsets? paddingCollapseMenu;
+  final Color? colorFillRemain;
   final bool alphaEffect;
+  final ValueChanged<double>? onFinishProgress;
 
   const CoordinatorMenuWidget({
     super.key,
     required this.functionView,
-    required this.extendView,
-    required this.fixedView,
+    required this.headerView,
+    required this.background,
     required this.menus,
+    this.middleView,
+    this.backgroundMenu,
     this.collapseMenus = const [],
     this.paddingMenu,
     this.paddingCollapseMenu,
     this.alphaEffect = true,
-    this.backgroundFixed,
-    this.backgroundExtend,
-    this.backgroundMenu
+    this.colorFillRemain = Colors.white,
+    this.onFinishProgress,
+    this.backgroundHeaderView
   });
 
   @override
@@ -54,35 +59,55 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
   
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        Expanded(
-          child: Stack(
-            children: [
-              CustomScrollView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                controller: _scrollController,
-                slivers: [
-                  SliverToBoxAdapter(child: widget.fixedView),
-                  SliverToBoxAdapter(child: widget.extendView),
-                  widget.functionView,
-                  SliverFillRemainNeedToScroll(child: widget.extendView),
-                ],
-              ),
-              CoordinatorMenuView(
-                scrollController: _scrollController,
-                fixedView: widget.fixedView,
-                extendView: widget.extendView,
-                menus: widget.menus,
-                collapseMenus: widget.collapseMenus,
-                paddingMenu: widget.paddingMenu,
-                paddingCollapseMenu: widget.paddingCollapseMenu,
-                alphaEffect: widget.alphaEffect,
-              )
-            ],
-          ),
+        widget.background,
+        CustomScrollView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: _scrollController,
+          slivers: [
+            SliverToBoxAdapter(child: _getExtraViewInScrollView()),
+            widget.functionView,
+            SliverFillRemainNeedToScroll(color: widget.colorFillRemain, child: _getExtraViewRemain(),),
+          ],
         ),
+        CoordinatorMenuView(
+          scrollController: _scrollController,
+          headerView: widget.headerView,
+          background: widget.background,
+          backgroundMenu: widget.backgroundMenu,
+          middleView: widget.middleView,
+          menus: widget.menus,
+          collapseMenus: widget.collapseMenus,
+          paddingMenu: widget.paddingMenu,
+          paddingCollapseMenu: widget.paddingCollapseMenu,
+          alphaEffect: widget.alphaEffect,
+          onFinishProgress: widget.onFinishProgress,
+          backgroundHeaderView: widget.backgroundHeaderView,
+        )
       ],
+    );
+  }
+
+  Widget _getExtraViewInScrollView(){
+    return ExtraViewInScrollView(
+      fixedView: widget.headerView,
+      background: widget.background,
+      firstMenu: widget.menus.first,
+      backgroundMenu: widget.backgroundMenu,
+      middleView: widget.middleView,
+      paddingMenu: widget.paddingMenu ?? EdgeInsets.zero,
+    );
+  }
+
+  Widget _getExtraViewRemain(){
+    return ExtraViewRemain(
+      fixedView: widget.headerView,
+      background: widget.background,
+      firstMenu: widget.menus.first,
+      backgroundMenu: widget.backgroundMenu,
+      middleView: widget.middleView,
+      paddingMenu: widget.paddingMenu ?? EdgeInsets.zero,
     );
   }
 }
