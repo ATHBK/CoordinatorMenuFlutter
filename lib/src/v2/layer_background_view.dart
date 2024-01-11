@@ -2,20 +2,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
+import 'container_menu_view.dart';
+
 class LayerBackgroundView extends MultiChildRenderObjectWidget {
 
   final Widget background;
+  final Widget header;
+  final Widget containerMenu;
   final Color bgColorChange;
   final ScrollController scrollController;
 
   LayerBackgroundView({
     super.key,
     required this.background,
+    required this.header,
     required this.bgColorChange,
-    required this.scrollController
+    required this.scrollController,
+    required this.containerMenu
   }): super(children: [
     background,
-    Container(color: bgColorChange,)
+    Container(color: bgColorChange,),
+    header,
+    containerMenu
   ]);
 
   @override
@@ -42,6 +50,11 @@ class RenderLayerBackground extends RenderBox with ContainerRenderObjectMixin<Re
 
   ScrollController get scrollable => _scrollable;
 
+  final int _positionHeader = 2;
+  final int _positionContainer = 3;
+
+  double _positionTopToScroll = 0;
+
   set scrollable(ScrollController value){
     if (value != _scrollable){
       if (attached){
@@ -57,7 +70,9 @@ class RenderLayerBackground extends RenderBox with ContainerRenderObjectMixin<Re
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _scrollable.position.addListener(markNeedsPaint);
+    if(_scrollable.hasClients) {
+      _scrollable.position.addListener(markNeedsPaint);
+    }
   }
 
   @override
@@ -88,11 +103,20 @@ class RenderLayerBackground extends RenderBox with ContainerRenderObjectMixin<Re
   void performLayout() {
     size = _computeSize(constraints: constraints, layoutChild: ChildLayoutHelper.layoutChild);
     RenderBox? child = firstChild;
+    int index = 0;
+    double heightContainer = 0;
     while(child != null){
       final childParentData = child.parentData! as LayerBackgroundData;
       child.layout(constraints, parentUsesSize: true);
       childParentData.offset = Offset.zero;
+      if (index == _positionHeader){
+        heightContainer = child.size.height;
+      }
+      else if (index == _positionContainer){
+        _positionTopToScroll = size.height - child.size.height - heightContainer / 2 - ContainerMenuView.buffer;
+      }
       child = childParentData.nextSibling;
+      index++;
     }
   }
 
@@ -105,6 +129,9 @@ class RenderLayerBackground extends RenderBox with ContainerRenderObjectMixin<Re
       // draw bg
       if (index == 0){
         _paintBg(context, offset, child);
+      }
+      else if (index == _positionHeader || index == _positionContainer){
+        // do not draw
       }
       else {
         _paintBgChange(context, offset, child);
@@ -119,12 +146,14 @@ class RenderLayerBackground extends RenderBox with ContainerRenderObjectMixin<Re
   }
 
   void _paintBgChange(PaintingContext context, Offset offset, RenderBox child){
-    final scrollDy = scrollable.offset;
-    final fraction = scrollDy / size.height;
-    context.pushOpacity(
-        offset, ui.Color.getAlphaFromOpacity(fraction), (
-        PaintingContext context, Offset offset) {
-      context.paintChild(child, offset);
-    });
+    if (scrollable.hasClients) {
+      final scrollDy = scrollable.offset;
+      final fraction = scrollDy / _positionTopToScroll;
+      context.pushOpacity(
+          offset, ui.Color.getAlphaFromOpacity(fraction), (
+          PaintingContext context, Offset offset) {
+        context.paintChild(child, offset);
+      });
+    }
   }
 }

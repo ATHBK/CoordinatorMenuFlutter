@@ -10,6 +10,7 @@ class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
   final Widget backgroundHeader;
   final Widget background;
   final ContainerMenuView containerMenu;
+  final Widget bgMenu;
 
   final List<Widget> listMenu;
   final EdgeInsets? paddingMenu;
@@ -24,6 +25,7 @@ class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
     required this.background,
     required this.containerMenu,
     required this.listMenu,
+    required this.bgMenu,
     this.paddingMenu,
     this.paddingCollapseMenu,
     required this.scrollController,
@@ -34,6 +36,7 @@ class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
       containerMenu,
       backgroundHeader,
       header,
+      bgMenu,
       ...listMenu
     ]
   );
@@ -42,8 +45,8 @@ class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
   RenderLayerMenuAndHeader createRenderObject(BuildContext context) {
     return RenderLayerMenuAndHeader(
       scrollable: scrollController,
-      paddingMenu: paddingMenu ?? EdgeInsets.zero,
-      paddingCollapseMenu: paddingCollapseMenu ?? EdgeInsets.zero,
+      paddingMenu: paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
+      paddingCollapseMenu: paddingCollapseMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
       countMenu: listMenu.length,
       onFinishProgress: onFinishProgress
     );
@@ -129,21 +132,22 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
   }
 
   final int _indexBg = 0;
-  final int _indexBgMenu = 1;
+  final int _indexContainerMenu = 1;
   final int _indexBgHeaderView = 2;
   final int _indexHeaderView = 3;
-  final int _indexFirstOfMenu = 4;
+  final int _indexBgMenu = 4;
+  final int _indexFirstOfMenu = 5;
 
   List<double> _menuDestinationPositionX = [];
   double _menuDestinationPositionY = 16;
 
-  double _heightBgMenu = 0;
+  double _heightContainerMenu = 0;
   double _heightCoordinatorView = 1;
   double _heightHeaderView = 0;
+  double _heightBgMenu = 0;
 
   double _positionCoordinatorView = 0;
   double _positionBgHeaderView = 0;
-  double _positionContainerMenuView = 0;
 
   @override
   void attach(PipelineOwner owner) {
@@ -235,11 +239,14 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
       if (index == _indexBg){
         _heightCoordinatorView = childSize.height;
       }
+      else if (index == _indexContainerMenu){
+        _heightContainerMenu = childSize.height;
+      }
+      else if (index == _indexHeaderView) {
+        _heightHeaderView = childSize.height;
+      }
       else if (index == _indexBgMenu){
         _heightBgMenu = childSize.height;
-      }
-      else if (index < _indexHeaderView) {
-        _heightHeaderView = childSize.height;
       }
       index++;
       child = childParentData.nextSibling;
@@ -259,9 +266,8 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
     final part = (constraints.maxWidth - paddingMenu.left - paddingMenu.right) / _countMenu;
     double widthMenu = 0;
     double heightMenu = 0;
-    _positionCoordinatorView = _heightCoordinatorView;
-    _positionBgHeaderView = size.height - _heightHeaderView;
-    _positionContainerMenuView = size.height / 2;
+    _positionCoordinatorView = _heightCoordinatorView - _heightHeaderView - _heightContainerMenu / 2;
+    _positionBgHeaderView = size.height - _heightHeaderView  - _heightContainerMenu / 2 - ContainerMenuView.buffer;
     while(child != null){
       final childParentData = child.parentData! as LayerMenuAndHeaderData;
       if (index == _indexBgHeaderView){
@@ -270,13 +276,18 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
       else {
         child.layout(constraints, parentUsesSize: true);
       }
-      if (index == _indexBg || index == _indexBgMenu || index == _indexHeaderView || index == _indexBgHeaderView){
+      if (index == _indexBg ||
+          index == _indexContainerMenu ||
+          index == _indexHeaderView ||
+          index == _indexBgHeaderView ||
+          index == _indexBgMenu
+      ){
         childParentData.offset = Offset.zero;
       }
       // set menu view
       else if (index - _indexFirstOfMenu < _countMenu){
-        final x = paddingMenu.left + part * (index - _indexFirstOfMenu) + part / 4;
-        final y = size.height - _heightBgMenu + _paddingMenu.top;
+        final x = paddingMenu.left + part * (index - _indexFirstOfMenu) + (part / 2 - child.size.width / 2);
+        final y = size.height - _heightContainerMenu + _paddingMenu.top + (_heightBgMenu / 2 - child.size.height/2);
         childParentData.offset = Offset(x, y);
         widthMenu = math.max(widthMenu, child.size.width);
         heightMenu = math.max(heightMenu, child.size.height);
@@ -297,7 +308,7 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
       final scrollDy = scrollable.offset;
       final fraction = scrollDy / _positionCoordinatorView;
       // _onFinishProgress?.call(fraction);
-      if (index == _indexBg || index == _indexBgMenu) {
+      if (index == _indexBg || index == _indexContainerMenu || index == _indexBgMenu) {
         // do not draw extend View
       }
       else if (index == _indexBgHeaderView){
@@ -392,7 +403,7 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
     final maxWidthOfView = size.width - edgeInset.left - edgeInset.right;
     final eachWidthOfView = maxWidthOfView / countCollapseMenu;
     return List<double>.generate(countCollapseMenu, (index) {
-      return edgeInset.left + index * eachWidthOfView + (eachWidthOfView / 2 - widthChild / 2);
+      return edgeInset.left + index * eachWidthOfView + (eachWidthOfView / 2 - widthChild / 2).abs();
     }, growable: false);
   }
 

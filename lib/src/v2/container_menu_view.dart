@@ -5,6 +5,8 @@ import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
 class ContainerMenuView extends MultiChildRenderObjectWidget {
 
+  static const buffer = 50.0;
+
   final Widget background;
   final List<Widget> listMenu;
   final List<Widget> listTitle;
@@ -29,16 +31,16 @@ class ContainerMenuView extends MultiChildRenderObjectWidget {
   @override
   RenderContainerMenu createRenderObject(BuildContext context) {
     return RenderContainerMenu(
-      paddingMenu: paddingMenu ?? EdgeInsets.zero,
-      paddingTitle: paddingTitle ?? EdgeInsets.zero
+      paddingMenu: paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
+      paddingTitle: paddingTitle ?? const EdgeInsets.symmetric(vertical: 8.0)
     );
   }
 
   @override
   void updateRenderObject(BuildContext context, covariant RenderContainerMenu renderObject) {
     renderObject
-      ..paddingMenu = paddingMenu ?? EdgeInsets.zero
-      ..paddingTitle = paddingTitle ?? EdgeInsets.zero;
+      ..paddingMenu = paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0)
+      ..paddingTitle = paddingTitle ?? const EdgeInsets.symmetric(vertical: 8.0);
   }
 }
 
@@ -124,8 +126,9 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
         childParentData.offset = Offset.zero;
       }
       else {
+        final minWidth = (size.width - paddingMenu.left - paddingMenu.right)/(childCount - 2);
         child.layout(
-            constraints.copyWith(maxWidth: (size.width - paddingMenu.left - paddingMenu.right)/(childCount - 2)), parentUsesSize: true);
+            constraints.copyWith(minWidth: minWidth, maxWidth: minWidth), parentUsesSize: true);
         final x = paddingTitle.left + partTitle * (index - _indexFirstTitle) + partTitle / 4;
         final y = size.height - child.size.height - paddingTitle.bottom;
         childParentData.offset = Offset(x, y);

@@ -81,58 +81,69 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(
-        // TRY THIS: Try changing the color here to a specific color (to
-        // Colors.amber, perhaps?) and trigger a hot reload to see the AppBar
-        // change color while the other colors stay the same.
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // Here we take the value from the MyHomePage object that was created by
-        // the App.build method, and use it to set our appbar title.
-        title: Text(widget.title),
-      ),
-        body: CoordinatorMenuWidget(
-            functionView: _getListFunction(),
-            background: _getExtendView(),
-            headerView: _getHeaderView(),
-            backgroundHeaderView: _getBgHeaderView(),
-            backgroundMenu: _getBgMenu(),
-            alphaEffect: true,
-            paddingMenu: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-            paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 50),
-            menus: [
-              _getItemMenu(Icons.catching_pokemon, "Catch"),
-              _getItemMenu(Icons.catching_pokemon, "Cloud"),
-              _getItemMenu(Icons.catching_pokemon, "Download"),
-              _getItemMenu(Icons.catching_pokemon, "Upload")
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: CoordinatorMenuWidget(
+                    headerView: _getHeaderView(),
+                    bgHeaderView: _getBgHeaderView(),
+                    bg: _getBg(),
+                    colorBgChange: Colors.white,
+                    containerMenuView: _getContainerView(),
+                    bgMenu: _getBgMenu(),
+                    menus: _getMenus(),
+                    listTitle: _getTitle(),
+                    functionView: _getListFunction(),
+                    paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 8.0),
+                ),
+              ),
             ],
-            collapseMenus: [
-              _getItemMenuCollapse(Icons.catching_pokemon),
-              _getItemMenuCollapse(Icons.cloud_circle),
-              _getItemMenuCollapse(Icons.cloud_download),
-              _getItemMenuCollapse(Icons.cloud_upload),
-            ],
-            onFinishProgress: (value) {
-              print("value: $value");
-              _controller.value = value;
-            },
-        ));
-  }
-
-
-  Widget _getItemMenu(IconData iconData, String text){
-    return Container(
-      height: 50.0,
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(iconData),
-          Text(text, style: const TextStyle(fontSize: 14, color: Colors.black54))
-        ],
-      ),
+          ),
+        )
     );
   }
 
-  Widget _getItemMenuCollapse(IconData iconData){
+  Widget _getBg(){
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        Image.asset("assets/images/bg.png", height: 160.0, width: double.infinity, fit: BoxFit.fill),
+        const SizedBox(height: 80,)
+      ],
+    );
+  }
+
+  List<Widget> _getMenus(){
+    return [
+      _getItemMenu(Icons.account_balance_wallet),
+      _getItemMenu(Icons.account_balance_wallet),
+      _getItemMenu(Icons.account_balance_wallet),
+      _getItemMenu(Icons.account_balance_wallet)
+    ];
+  }
+
+  List<Widget> _getTitle(){
+    return [
+      _getTextMenu("Menu 1"),
+      _getTextMenu("Menu 2"),
+      _getTextMenu("Menu 3"),
+      _getTextMenu("Menu 4")
+    ];
+  }
+
+  Widget _getBgMenu(){
+    return Container(
+      decoration: BoxDecoration(
+        color: Colors.blue,
+        borderRadius: BorderRadius.circular(5)
+      ),
+      width: 50.0,
+      height: 50.0,
+    );
+  }
+
+  Widget _getItemMenu(IconData iconData){
     return Icon(
       iconData,
       color: Colors.white,
@@ -140,16 +151,28 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     );
   }
 
+  Widget _getTextMenu(String text){
+    return Text(
+      text,
+    );
+  }
+
   Widget _getHeaderView(){
     return const SizedBox(
       width: double.maxFinite,
       height: 50.0,
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(Icons.account_circle),
-          Icon(Icons.circle_notifications),
-        ],
+      child: Padding(
+        padding: EdgeInsets.symmetric(horizontal: 16.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(Icons.search, color: Colors.white, size: 30,),
+            Expanded(child: SizedBox()),
+            Icon(Icons.notification_add_outlined, color: Colors.white, size: 30),
+            SizedBox(width: 16.0,),
+            Icon(Icons.message_outlined, color: Colors.white, size: 30,),
+          ],
+        ),
       ),
     );
   }
@@ -163,19 +186,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
 
-  Widget _getExtendView(){
-    return Container(
-      width: double.infinity,
-      height: 250,
-      child: Column(
-        children: [
-          Image.asset("assets/images/bg.png", width: double.infinity, height: 170, fit: BoxFit.fill),
-        ],
-      ),
-    );
-  }
-
-  Widget _getListFunction() {
+  SliverMultiBoxAdaptorWidget _getListFunction() {
     return SliverGrid.builder(gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4
     ), itemBuilder: (context, index) {
@@ -193,14 +204,16 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     itemCount: 4);
   }
 
-  Widget _getBgMenu(){
+  Widget _getContainerView(){
     return Container(
       height: 100,
-      margin: EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16),
       decoration: BoxDecoration(
         color: Colors.red,
-        borderRadius: BorderRadius.circular(10)
+        borderRadius: BorderRadius.circular(10),
       ),
     );
   }
+
+
 }

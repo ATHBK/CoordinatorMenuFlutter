@@ -3,9 +3,12 @@ import 'package:flutter/rendering.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
+import 'container_menu_view.dart';
+
 class LayerBackgroundMenuView extends MultiChildRenderObjectWidget {
 
   final Widget background;
+  final Widget header;
   final Widget containerMenuView;
   final Widget firstMenu;
   final List<Widget> listBgMenu;
@@ -16,6 +19,7 @@ class LayerBackgroundMenuView extends MultiChildRenderObjectWidget {
   LayerBackgroundMenuView({
     super.key,
     required this.background,
+    required this.header,
     required this.containerMenuView,
     required this.firstMenu,
     required this.listBgMenu,
@@ -25,6 +29,7 @@ class LayerBackgroundMenuView extends MultiChildRenderObjectWidget {
   }): super(
     children: [
       background,
+      header,
       containerMenuView,
       firstMenu,
       ...listBgMenu
@@ -34,8 +39,8 @@ class LayerBackgroundMenuView extends MultiChildRenderObjectWidget {
   @override
   RenderLayerBackgroundMenu createRenderObject(BuildContext context) {
     return RenderLayerBackgroundMenu(
-      paddingMenu: paddingMenu ?? EdgeInsets.zero,
-      paddingCollapseMenu: paddingCollapseMenu ?? EdgeInsets.zero,
+      paddingMenu: paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
+      paddingCollapseMenu: paddingCollapseMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
       scrollable: scrollable,
       countMenu: listBgMenu.length
     );
@@ -44,7 +49,9 @@ class LayerBackgroundMenuView extends MultiChildRenderObjectWidget {
   @override
   void updateRenderObject(BuildContext context, covariant RenderLayerBackgroundMenu renderObject) {
     renderObject
-        ..paddingMenu = paddingMenu ?? EdgeInsets.zero
+        ..paddingMenu = paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0)
+        ..paddingCollapseMenu = paddingCollapseMenu ?? const EdgeInsets.symmetric(vertical: 8.0)
+        ..countMenu = listBgMenu.length
         ..scrollable = scrollable;
   }
 }
@@ -106,21 +113,21 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
   }
 
   final int _indexBg = 0;
-  final int _indexBgMenu = 1;
-  final int _indexBgHeaderView = 2;
-  final int _indexHeaderView = 3;
-  final int _indexFirstOfMenu = 4;
+  final int _indexHeaderView = 1;
+  final int _indexContainer = 2;
+  final int _indexFirstOfMenu = 3;
+  final int _indexFirstBgMenu = 4;
 
   List<double> _menuDestinationPositionX = [];
   double _menuDestinationPositionY = 16;
 
-  double _heightBgMenu = 0;
   double _heightCoordinatorView = 1;
   double _heightHeaderView = 0;
+  double _heightContainer = 0;
 
   double _positionCoordinatorView = 0;
-  double _positionBgHeaderView = 0;
-  double _positionContainerMenuView = 0;
+  // double _positionBgHeaderView = 0;
+  // double _positionContainerMenuView = 0;
 
   @override
   void attach(PipelineOwner owner) {
@@ -195,11 +202,11 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
       if (index == _indexBg){
         _heightCoordinatorView = childSize.height;
       }
-      else if (index == _indexBgMenu){
-        _heightBgMenu = childSize.height;
-      }
-      else if (index < _indexHeaderView) {
+      else if (index == _indexHeaderView){
         _heightHeaderView = childSize.height;
+      }
+      else if (index == _indexContainer) {
+        _heightContainer = childSize.height;
       }
       index++;
       child = childParentData.nextSibling;
@@ -219,24 +226,19 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
     final part = (constraints.maxWidth - paddingMenu.left - paddingMenu.right) / _countMenu;
     double widthMenu = 0;
     double heightMenu = 0;
-    _positionCoordinatorView = _heightCoordinatorView;
-    _positionBgHeaderView = size.height - _heightHeaderView;
-    _positionContainerMenuView = size.height / 2;
+    _positionCoordinatorView = _heightCoordinatorView - _heightHeaderView - _heightContainer / 2;
+    // _positionBgHeaderView = size.height - _heightHeaderView;
+    // _positionContainerMenuView = size.height / 2;
     while(child != null){
       final childParentData = child.parentData! as LayerBackgroundMenuData;
-      if (index == _indexBgHeaderView){
-        child.layout(constraints.copyWith(maxHeight: _heightHeaderView), parentUsesSize: true);
-      }
-      else {
-        child.layout(constraints, parentUsesSize: true);
-      }
-      if (index == _indexBg || index == _indexBgMenu || index == _indexHeaderView || index == _indexBgHeaderView){
+      child.layout(constraints, parentUsesSize: true);
+      if (index == _indexBg || index == _indexHeaderView || index == _indexContainer || index == _indexFirstOfMenu){
         childParentData.offset = Offset.zero;
       }
       // set menu view
-      else if (index - _indexFirstOfMenu < _countMenu){
-        final x = paddingMenu.left + part * (index - _indexFirstOfMenu) + part / 4;
-        final y = size.height - _heightBgMenu + _paddingMenu.top;
+      else if (index - _indexFirstBgMenu < _countMenu){
+        final x = paddingMenu.left + part * (index - _indexFirstBgMenu) + (part / 2 - child.size.width /2);
+        final y = size.height - _heightContainer + _paddingMenu.top;
         childParentData.offset = Offset(x, y);
         widthMenu = math.max(widthMenu, child.size.width);
         heightMenu = math.max(heightMenu, child.size.height);
@@ -257,26 +259,18 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
       final scrollDy = scrollable.offset;
       final fraction = scrollDy / _positionCoordinatorView;
       // _onFinishProgress?.call(fraction);
-      if (index == _indexBg || index == _indexBgMenu) {
+      if (index == _indexBg || index == _indexHeaderView || index == _indexContainer || index == _indexFirstOfMenu) {
         // do not draw extend View
       }
-      else if (index == _indexBgHeaderView){
-        final fractionHeaderView = scrollDy / _positionBgHeaderView;
-        _paintBgHeaderView(context, offset, fractionHeaderView, index, child, childParentData);
-      }
-      // draw fixed view
-      else if (index == _indexHeaderView) {
-        context.paintChild(child, offset + childParentData.offset);
-      }
-      else if (index - _indexFirstOfMenu < _countMenu) {
-        _paintMenu(context, offset, fraction, index - _indexFirstOfMenu, child, childParentData);
+      else if (index - _indexFirstBgMenu < _countMenu) {
+        _paintMenu(context, offset, fraction, index - _indexFirstBgMenu, child, childParentData);
       }
       index++;
       child = childParentData.nextSibling;
     }
   }
 
-  void _paintBgHeaderView(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerMenuAndHeaderData childParentData){
+  void _paintBgHeaderView(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerBackgroundMenuData childParentData){
     if (fraction >= 1){
       context.paintChild(child, offset + childParentData.offset);
     }
@@ -290,7 +284,7 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
   }
 
 
-  void _paintMenu(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerMenuAndHeaderData childParentData){
+  void _paintMenu(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerBackgroundMenuData childParentData){
     final originOffset = childParentData.offset;
     final distanceX = originOffset.dx - _menuDestinationPositionX[index];
     final distanceY = originOffset.dy - _menuDestinationPositionY;
@@ -302,10 +296,19 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
       final newDx = originOffset.dx - distanceX * fraction;
       final newDy = originOffset.dy - distanceY * fraction;
       final newOffset = offset + Offset(newDx, newDy);
-      context.paintChild(child, newOffset);
-      // if (fraction == 1.0) {
-      // context.pushTransform(
-      //     needsCompositing, newOffset, Matrix4.identity(), painter);
+      // context.paintChild(child, newOffset);
+
+      // context.pushOpacity(
+      //     newOffset, ui.Color.getAlphaFromOpacity(1 - fraction), (
+      //     PaintingContext context, Offset offset) {
+      //   context.paintChild(child, newOffset);
+      // });
+      context.pushOpacity(
+          newOffset, ui.Color.getAlphaFromOpacity(1 - fraction), (
+          PaintingContext context, Offset offset) {
+        context.pushTransform(
+            needsCompositing, offset, Matrix4.identity(), painter);
+      });
     }
     else {
       final newOffset = offset +

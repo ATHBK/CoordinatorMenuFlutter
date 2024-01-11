@@ -51,7 +51,7 @@ class RenderLayoutBoundMenu extends RenderBox with ContainerRenderObjectMixin<Re
       }
       // bg menu
       else {
-        childParentData.offset = Offset(0, size.height);
+        childParentData.offset = Offset(0, size.height - child.size.height);
       }
       child = childParentData.nextSibling;
       index++;
