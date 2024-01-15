@@ -22,6 +22,7 @@ class CoordinatorMenuWidget extends StatefulWidget {
   final EdgeInsets? paddingTitle;
   final Color? colorBgChange;
   final Color? colorFillRemain;
+  final double functionViewPaddingTop;
   final ValueChanged<double>? onFinishProgress;
 
   const CoordinatorMenuWidget({
@@ -39,7 +40,8 @@ class CoordinatorMenuWidget extends StatefulWidget {
     this.paddingTitle,
     this.colorFillRemain = Colors.white,
     this.onFinishProgress,
-    this.colorBgChange
+    this.colorBgChange,
+    this.functionViewPaddingTop = 16.0
   });
 
   @override
@@ -110,6 +112,7 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
             background: widget.bg,
             backgroundMenu: _getContainerView()
         )),
+        SliverToBoxAdapter(child: SizedBox(height: widget.functionViewPaddingTop,),),
         widget.functionView,
         SliverFillRemainNeedToScroll(color: widget.colorFillRemain, child: widget.bg,),
       ],

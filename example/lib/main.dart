@@ -94,8 +94,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     bgMenu: _getBgMenu(),
                     menus: _getMenus(),
                     listTitle: _getTitle(),
+                    paddingMenu: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     functionView: _getListFunction(),
-                    paddingCollapseMenu: const EdgeInsets.symmetric(horizontal: 80.0, vertical: 8.0),
+                    paddingCollapseMenu: const EdgeInsets.fromLTRB(62, 8, 108, 8),
                 ),
               ),
             ],
@@ -154,6 +155,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   Widget _getTextMenu(String text){
     return Text(
       text,
+      textAlign: TextAlign.center,
     );
   }
 
@@ -207,13 +209,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   Widget _getContainerView(){
     return Container(
       height: 100,
-      margin: const EdgeInsets.symmetric(horizontal: 16),
+      margin: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
-        color: Colors.red,
+        color: Colors.grey.shade200,
         borderRadius: BorderRadius.circular(10),
       ),
     );
   }
-
-
 }

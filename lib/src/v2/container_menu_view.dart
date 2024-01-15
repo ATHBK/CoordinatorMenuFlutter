@@ -117,7 +117,8 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     RenderBox? child = firstChild;
     int index = 0;
     final totalTitle = childCount - 2;
-    final partTitle = (constraints.maxWidth - paddingTitle.left - paddingTitle.right) / totalTitle;
+    final partTitle = (size.width - paddingMenu.left - paddingMenu.right)/ totalTitle;
+    final maxWidthText = partTitle - paddingTitle.left - paddingTitle.right;
 
     while(child != null){
       final childParentData = child.parentData! as ContainerMenuData;
@@ -126,10 +127,11 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
         childParentData.offset = Offset.zero;
       }
       else {
-        final minWidth = (size.width - paddingMenu.left - paddingMenu.right)/(childCount - 2);
         child.layout(
-            constraints.copyWith(minWidth: minWidth, maxWidth: minWidth), parentUsesSize: true);
-        final x = paddingTitle.left + partTitle * (index - _indexFirstTitle) + partTitle / 4;
+            constraints.copyWith(minWidth: maxWidthText, maxWidth: maxWidthText), parentUsesSize: true);
+        final x = paddingTitle.left + partTitle * (index - _indexFirstTitle) + paddingMenu.left;
+        print("title: $index, $partTitle, ${child.size.width}");
+        print("title x: $x");
         final y = size.height - child.size.height - paddingTitle.bottom;
         childParentData.offset = Offset(x, y);
       }
@@ -199,6 +201,7 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     double hBg = 0;
     double hContentInside = 0;
     double hMaxTitle = 0;
+    final maxWidthText =  ((width - paddingMenu.left - paddingMenu.right)/(childCount - 2)) - paddingTitle.left - paddingTitle.right;
     while(child != null){
       final childParentData = child.parentData! as ContainerMenuData;
       final Size childSize = layoutChild(child, constraints);
@@ -211,7 +214,7 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
         hContentInside += childSize.height;
       }
       else {
-        final Size childTextSize = layoutChild(child, constraints.copyWith(maxWidth: (width - paddingMenu.left - paddingMenu.right))/(childCount - 2));
+        final Size childTextSize = layoutChild(child, constraints.copyWith(maxWidth: maxWidthText, minWidth: maxWidthText));
         hMaxTitle = math.max(hMaxTitle, childTextSize.height);
       }
       child = childParentData.nextSibling;
