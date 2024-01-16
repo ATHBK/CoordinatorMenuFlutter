@@ -49,10 +49,6 @@ class RenderRemainView extends RenderBox with ContainerRenderObjectMixin<RenderB
     }
   }
 
-  double _heightMenu = 0;
-  double _heightFixedView = 0;
-  double _heightMiddleView = 0;
-
   @override
   void setupParentData(covariant RenderObject child) {
     if (child.parentData is! RemainViewData){
@@ -60,100 +56,41 @@ class RenderRemainView extends RenderBox with ContainerRenderObjectMixin<RenderB
     }
   }
 
-  // static double getIntrinsicDimension(RenderBox? firstChild, double Function(RenderBox child) mainChildSizeGetter) {
-  //   RenderBox? child = firstChild;
-  //   double heightOfBg = 0;
-  //   double heightMenu = 0;
-  //   double heightFixedView = 0;
-  //   double maxHeight = 0;
-  //   int index = 0;
-  //   while (child != null) {
-  //     final RemainViewData childParentData = child.parentData! as RemainViewData;
-  //     final childSizeHeight = mainChildSizeGetter(child);
-  //     print("Height child size: $childSizeHeight");
-  //     // extent += math.max(extent, mainChildSizeGetter(child));
-  //     if (index == 0){
-  //       heightOfBg = childSizeHeight;
-  //     }
-  //     else {
-  //       // height of fixed view
-  //       if (index == 1){
-  //         heightFixedView = childSizeHeight;
-  //         maxHeight += heightFixedView;
-  //       }
-  //       // height of first menu
-  //       else if (index == 2){
-  //         heightMenu = childSizeHeight;
-  //         maxHeight += heightMenu;
-  //       }
-  //       // check bgMenu exist
-  //       // background menu
-  //       else if (index == 3 && childSizeHeight > 0){
-  //         maxHeight = maxHeight - heightMenu;
-  //         heightMenu = childSizeHeight;
-  //         print("Height Menu: ${childSizeHeight}");
-  //         maxHeight += heightMenu;
-  //       }
-  //       // middle view
-  //       else if (index == 4){
-  //         maxHeight += childSizeHeight;
-  //       }
-  //     }
-  //     index++;
-  //     child = childParentData.nextSibling;
-  //   }
-  //   return math.max(heightOfBg, maxHeight);
-  // }
-  //
-  // @override
-  // double computeMinIntrinsicWidth(double height) {
-  //   return getIntrinsicDimension(firstChild, (RenderBox child) => child.getMinIntrinsicWidth(height));
-  // }
-  //
-  // @override
-  // double computeMaxIntrinsicWidth(double height) {
-  //   return getIntrinsicDimension(firstChild, (RenderBox child) => child.getMaxIntrinsicWidth(height));
-  // }
-  //
-  // @override
-  // double computeMinIntrinsicHeight(double width) {
-  //   return getIntrinsicDimension(firstChild, (RenderBox child) => child.getMinIntrinsicHeight(width));
-  // }
-  //
-  // @override
-  // double computeMaxIntrinsicHeight(double width) {
-  //   return getIntrinsicDimension(firstChild, (RenderBox child) => child.getMaxIntrinsicHeight(width));
-  // }
-
-  Size _computeSize({required BoxConstraints constraints, required ChildLayouter layoutChild}){
-    if (childCount == 0){
-      return (constraints.biggest.isFinite) ? constraints.biggest : constraints.smallest;
-    }
-    double width = constraints.maxWidth;
-    double height = constraints.minHeight;
-    double heightOfHeader = 0;
+  double getIntrinsicDimension(RenderBox? firstChild, double Function(RenderBox child) mainChildSizeGetter) {
     RenderBox? child = firstChild;
+    double heightOfHeader = 0;
+    double maxHeight = 0;
     int index = 0;
-    while(child != null){
-      final childParentData = child.parentData! as RemainViewData;
-      final Size childSize = layoutChild(child, constraints);
-      // header view
+    while (child != null) {
+      final RemainViewData childParentData = child.parentData! as RemainViewData;
+      final childSizeHeight = mainChildSizeGetter(child);
+      print("Height child size: $childSizeHeight");
+      // extent += math.max(extent, mainChildSizeGetter(child));
       if (index == 0){
-        heightOfHeader = childSize.height;
+        heightOfHeader = childSizeHeight;
       }
       else {
-        // height of fixed view
-        height = childSize.height - heightOfHeader - _functionPaddingTop;
+        maxHeight = childSizeHeight - heightOfHeader;
       }
       index++;
       child = childParentData.nextSibling;
     }
-    return Size(width, height);
+    return maxHeight;
+  }
+
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return getIntrinsicDimension(firstChild, (RenderBox child) => child.getMinIntrinsicHeight(width));
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return getIntrinsicDimension(firstChild, (RenderBox child) => child.getMaxIntrinsicHeight(width));
   }
 
   @override
   void performLayout() {
-    size = _computeSize(constraints: constraints, layoutChild: ChildLayoutHelper.dryLayoutChild);
+    size = constraints.biggest;
     RenderBox? child = firstChild;
     while(child != null){
       final childParentData = child.parentData as RemainViewData;

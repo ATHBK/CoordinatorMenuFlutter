@@ -12,6 +12,7 @@ class ContainerMenuView extends MultiChildRenderObjectWidget {
   final List<Widget> listTitle;
   final EdgeInsets? paddingTitle;
   final EdgeInsets? paddingMenu;
+  final Widget? bgMenu;
 
   ContainerMenuView({
     super.key,
@@ -19,11 +20,13 @@ class ContainerMenuView extends MultiChildRenderObjectWidget {
     required this.listMenu,
     required this.listTitle,
     this.paddingTitle,
-    this.paddingMenu
+    this.paddingMenu,
+    this.bgMenu
   }): super(
     children: [
       background,
       listMenu.first,
+      bgMenu ?? const SizedBox.shrink(),
       ...listTitle,
     ]
   );
@@ -74,7 +77,7 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     }
   }
 
-  final _indexFirstTitle = 2;
+  final _indexFirstTitle = 3;
 
   @override
   void setupParentData(covariant RenderObject child) {
@@ -93,15 +96,15 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     return constraints.biggest.width;
   }
 
-  // @override
-  // double computeMinIntrinsicHeight(double width) {
-  //   return _getIntrinsicHeight(width);
-  // }
-  //
-  // @override
-  // double computeMaxIntrinsicHeight(double width) {
-  //   return _getIntrinsicHeight(width);
-  // }
+  @override
+  double computeMinIntrinsicHeight(double width) {
+    return 100;
+  }
+
+  @override
+  double computeMaxIntrinsicHeight(double width) {
+    return 100;
+  }
 
   @override
   Size computeDryLayout(BoxConstraints constraints) {
@@ -116,13 +119,19 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     size = _computeSize(constraints: constraints, layoutChild: ChildLayoutHelper.layoutChild);
     RenderBox? child = firstChild;
     int index = 0;
-    final totalTitle = childCount - 2;
+    final totalTitle = childCount - _indexFirstTitle;
     final partTitle = (size.width - paddingMenu.left - paddingMenu.right)/ totalTitle;
     final maxWidthText = partTitle - paddingTitle.left - paddingTitle.right;
 
     while(child != null){
       final childParentData = child.parentData! as ContainerMenuData;
-      if (index == 0 || index == 1){
+      // bg
+      if (index == 0){
+        child.layout(constraints.tighten(height: size.height), parentUsesSize: true);
+        childParentData.offset = Offset.zero;
+      }
+      // first menu + bg menu
+      else if (index == 1 || index == 2){
         child.layout(constraints, parentUsesSize: true);
         childParentData.offset = Offset.zero;
       }
@@ -130,8 +139,6 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
         child.layout(
             constraints.copyWith(minWidth: maxWidthText, maxWidth: maxWidthText), parentUsesSize: true);
         final x = paddingTitle.left + partTitle * (index - _indexFirstTitle) + paddingMenu.left;
-        print("title: $index, $partTitle, ${child.size.width}");
-        print("title x: $x");
         final y = size.height - child.size.height - paddingTitle.bottom;
         childParentData.offset = Offset(x, y);
       }
@@ -146,8 +153,8 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     int index = 0;
     while (child != null) {
       final childParentData = child.parentData! as ContainerMenuData;
-      // not draw first menu
-      if (index != 1){
+      // not draw first menu and bg menu
+      if (index != 1 && index != 2){
         context.paintChild(child, offset + childParentData.offset);
       }
       child = childParentData.nextSibling;
@@ -201,7 +208,7 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     double hBg = 0;
     double hContentInside = 0;
     double hMaxTitle = 0;
-    final maxWidthText =  ((width - paddingMenu.left - paddingMenu.right)/(childCount - 2)) - paddingTitle.left - paddingTitle.right;
+    final maxWidthText =  ((width - paddingMenu.left - paddingMenu.right)/(childCount - _indexFirstTitle)) - paddingTitle.left - paddingTitle.right;
     while(child != null){
       final childParentData = child.parentData! as ContainerMenuData;
       final Size childSize = layoutChild(child, constraints);
@@ -209,9 +216,12 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
       if (index == 0){
         hBg = childSize.height;
       }
-      //
+      // first menu
       else if (index == 1){
         hContentInside += childSize.height;
+      } // bg menu
+      else if (index == 2){
+        hContentInside = math.max(hContentInside, childSize.height);
       }
       else {
         final Size childTextSize = layoutChild(child, constraints.copyWith(maxWidth: maxWidthText, minWidth: maxWidthText));

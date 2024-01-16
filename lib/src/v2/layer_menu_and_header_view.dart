@@ -161,8 +161,9 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
       // scroll is stop
       if (hasSize) {
         final scrollDy = scrollable.offset;
-        final fraction = scrollDy / _heightCoordinatorView;
+        final fraction = scrollDy / (_heightCoordinatorView - _heightHeaderView);
         // _onFinishProgress?.call(fraction);
+        print("fraction: $fraction");
         _finishMove(fraction);
       }
 
@@ -420,7 +421,7 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
         if(scrollAnimateToRunning != null) {
           await scrollAnimateToRunning;
         }
-        scrollAnimateToRunning = _scrollable.animateTo(_heightCoordinatorView, duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
+        scrollAnimateToRunning = _scrollable.animateTo((_heightCoordinatorView - _heightHeaderView), duration: const Duration(milliseconds: 200), curve: Curves.easeIn);
       });
     }
     else if (fraction <= 0.9 && fraction > 0 && _scrollable.position.userScrollDirection == ScrollDirection.forward){

@@ -4,6 +4,7 @@ import 'package:flutter_coordinator_menu/src/v2/layer_background_item_menu_view.
 import 'package:flutter_coordinator_menu/src/v2/layer_background_view.dart';
 import 'package:flutter_coordinator_menu/src/v2/layer_bound_menu_view.dart';
 import 'package:flutter_coordinator_menu/src/v2/layer_menu_and_header_view.dart';
+import 'package:flutter_coordinator_menu/src/v2/remain_view.dart';
 
 import 'sliver_fill_remain_need_to_scroll.dart';
 
@@ -114,7 +115,7 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
         )),
         SliverToBoxAdapter(child: SizedBox(height: widget.functionViewPaddingTop,),),
         widget.functionView,
-        SliverFillRemainNeedToScroll(color: widget.colorFillRemain, child: widget.bg,),
+        SliverFillRemainNeedToScroll(color: widget.colorFillRemain, child: _getRemainView(),),
       ],
     );
   }
@@ -126,11 +127,21 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
         listTitle: widget.listTitle,
         paddingMenu: widget.paddingMenu,
         paddingTitle: widget.paddingTitle,
+        bgMenu: widget.bgMenu,
     );
   }
 
   List<Widget> _generateListBgMenu(){
     return widget.listTitle.map((e) => widget.bgMenu ?? const SizedBox.shrink()).toList(growable: false);
   }
+
+  RemainView _getRemainView(){
+    return RemainView(
+        headerView: widget.headerView,
+        background: widget.bg,
+        functionViewPaddingTop: widget.functionViewPaddingTop
+    );
+  }
+
 
 }

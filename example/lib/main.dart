@@ -208,7 +208,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
   Widget _getContainerView(){
     return Container(
-      height: 100,
       margin: const EdgeInsets.symmetric(horizontal: 16.0),
       decoration: BoxDecoration(
         color: Colors.grey.shade200,
