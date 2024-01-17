@@ -64,7 +64,7 @@ class RenderRemainView extends RenderBox with ContainerRenderObjectMixin<RenderB
     while (child != null) {
       final RemainViewData childParentData = child.parentData! as RemainViewData;
       final childSizeHeight = mainChildSizeGetter(child);
-      print("Height child size: $childSizeHeight");
+      // print("Height child size: $childSizeHeight");
       // extent += math.max(extent, mainChildSizeGetter(child));
       if (index == 0){
         heightOfHeader = childSizeHeight;

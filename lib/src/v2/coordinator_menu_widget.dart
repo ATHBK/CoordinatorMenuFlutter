@@ -10,6 +10,9 @@ import 'sliver_fill_remain_need_to_scroll.dart';
 
 class CoordinatorMenuWidget extends StatefulWidget {
 
+  static const defaultPaddingTitle = EdgeInsets.fromLTRB(4.0, 0, 4.0, 8.0);
+  static const defaultPaddingMenu = EdgeInsets.all(8.0);
+
   final SliverMultiBoxAdaptorWidget functionView;
   final Widget headerView;
   final Widget bg;
@@ -99,6 +102,7 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
             paddingMenu: widget.paddingMenu,
             paddingCollapseMenu: widget.paddingCollapseMenu,
             bgMenu: widget.bgMenu ?? const SizedBox.shrink(),
+            onFinishProgress: widget.onFinishProgress,
         )
       ],
     );

@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter_coordinator_menu/src/coordinator_view.dart';
 
 class LayerBoundMenuView extends MultiChildRenderObjectWidget {
 

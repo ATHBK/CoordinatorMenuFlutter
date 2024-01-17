@@ -73,7 +73,7 @@ class _RenderSliverRemainNeedToScroll extends RenderSliverSingleBoxAdapter {
           childExtent = child!.getMaxIntrinsicWidth(constraints.crossAxisExtent);
         case Axis.vertical:
           childExtent = child!.getMaxIntrinsicHeight(constraints.crossAxisExtent);
-          print("childExtend: $childExtent");
+          // print("childExtend: $childExtent");
       }
 
       // If the childExtent is greater than the computed extent, we want to use
@@ -99,7 +99,7 @@ class _RenderSliverRemainNeedToScroll extends RenderSliverSingleBoxAdapter {
         'false.',
     );
     final double paintedChildSize = calculatePaintOffset(constraints, from: 0.0, to: extent);
-    print("paintedChildSize: ${paintedChildSize}, $_sizeHeight");
+    // print("paintedChildSize: ${paintedChildSize}, $_sizeHeight");
     assert(paintedChildSize.isFinite);
     assert(paintedChildSize >= 0.0);
     geometry = SliverGeometry(

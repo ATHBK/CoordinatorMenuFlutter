@@ -4,6 +4,8 @@ import 'container_menu_view.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
+import 'coordinator_menu_widget.dart';
+
 class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
 
   final Widget header;
@@ -45,8 +47,8 @@ class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
   RenderLayerMenuAndHeader createRenderObject(BuildContext context) {
     return RenderLayerMenuAndHeader(
       scrollable: scrollController,
-      paddingMenu: paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
-      paddingCollapseMenu: paddingCollapseMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
+      paddingMenu: paddingMenu ?? CoordinatorMenuWidget.defaultPaddingMenu,
+      paddingCollapseMenu: paddingCollapseMenu ?? CoordinatorMenuWidget.defaultPaddingTitle,
       countMenu: listMenu.length,
       onFinishProgress: onFinishProgress
     );
@@ -55,8 +57,8 @@ class LayerMenuAndHeaderView extends MultiChildRenderObjectWidget {
   @override
   void updateRenderObject(BuildContext context, covariant RenderLayerMenuAndHeader renderObject) {
     renderObject
-      ..paddingMenu = paddingMenu ?? EdgeInsets.zero
-      ..paddingCollapseMenu = paddingCollapseMenu ?? EdgeInsets.zero
+      ..paddingMenu = paddingMenu ?? CoordinatorMenuWidget.defaultPaddingMenu
+      ..paddingCollapseMenu = paddingCollapseMenu ?? CoordinatorMenuWidget.defaultPaddingTitle
       ..onFinishProgress = onFinishProgress
       ..countMenu = listMenu.length;
   }
@@ -148,12 +150,27 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
 
   double _positionCoordinatorView = 0;
   double _positionBgHeaderView = 0;
+  bool _isFinish = false;
 
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    _scrollable.position.addListener(markNeedsPaint);
+    _scrollable.position.addListener(_listenerScroll);
     _scrollable.position.isScrollingNotifier.addListener(_listenerScrollStatus);
+  }
+
+  void _listenerScroll(){
+    markNeedsPaint();
+    final scrollDy = scrollable.offset;
+    final fraction = scrollDy / (_heightCoordinatorView - _heightHeaderView);
+    if (fraction >= 0 && fraction < 1) {
+      _isFinish = false;
+      onFinishProgress?.call(fraction);
+    }
+    else if (fraction >= 1 && _isFinish == false){
+      _isFinish = true;
+      onFinishProgress?.call(1);
+    }
   }
 
   void _listenerScrollStatus(){
@@ -162,8 +179,6 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
       if (hasSize) {
         final scrollDy = scrollable.offset;
         final fraction = scrollDy / (_heightCoordinatorView - _heightHeaderView);
-        // _onFinishProgress?.call(fraction);
-        print("fraction: $fraction");
         _finishMove(fraction);
       }
 
@@ -174,7 +189,7 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
 
   @override
   void detach() {
-    _scrollable.position.removeListener(markNeedsPaint);
+    _scrollable.position.removeListener(_listenerScroll);
     _scrollable.position.isScrollingNotifier.removeListener(_listenerScrollStatus);
     super.detach();
   }
@@ -268,7 +283,7 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
     double widthMenu = 0;
     double heightMenu = 0;
     _positionCoordinatorView = _heightCoordinatorView - _heightHeaderView - _heightContainerMenu / 2;
-    _positionBgHeaderView = size.height - _heightHeaderView  - _heightContainerMenu / 2 - ContainerMenuView.buffer;
+    _positionBgHeaderView = size.height - 2 * _heightHeaderView  - _heightContainerMenu / 2;
     while(child != null){
       final childParentData = child.parentData! as LayerMenuAndHeaderData;
       if (index == _indexBgHeaderView){
@@ -288,7 +303,8 @@ class RenderLayerMenuAndHeader extends RenderBox with ContainerRenderObjectMixin
       // set menu view
       else if (index - _indexFirstOfMenu < _countMenu){
         final x = paddingMenu.left + part * (index - _indexFirstOfMenu) + (part / 2 - child.size.width / 2);
-        final y = size.height - _heightContainerMenu + _paddingMenu.top + (_heightBgMenu / 2 - child.size.height/2);
+        final extend = _heightBgMenu > 0 ? (_heightBgMenu / 2 - child.size.height/2) : 0;
+        final y = size.height - _heightContainerMenu + _paddingMenu.top + extend;
         childParentData.offset = Offset(x, y);
         widthMenu = math.max(widthMenu, child.size.width);
         heightMenu = math.max(heightMenu, child.size.height);

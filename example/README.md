@@ -1,4 +1,4 @@
-# example
+# Coordinator Menu Widget
 
 A new Flutter project.
 

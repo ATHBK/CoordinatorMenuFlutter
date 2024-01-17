@@ -113,7 +113,7 @@ class RenderLayerBackground extends RenderBox with ContainerRenderObjectMixin<Re
         heightContainer = child.size.height;
       }
       else if (index == _positionContainer){
-        _positionTopToScroll = size.height - child.size.height - heightContainer / 2 - ContainerMenuView.buffer;
+        _positionTopToScroll = size.height - child.size.height - heightContainer / 2;
       }
       child = childParentData.nextSibling;
       index++;

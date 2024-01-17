@@ -81,6 +81,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     // fast, so that you can just rebuild anything that needs updating rather
     // than having to individually change instances of widgets.
     return Scaffold(
+        backgroundColor: Colors.white,
         body: SafeArea(
           child: Column(
             children: [
@@ -97,6 +98,9 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
                     paddingMenu: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     functionView: _getListFunction(),
                     paddingCollapseMenu: const EdgeInsets.fromLTRB(62, 8, 108, 8),
+                    onFinishProgress: (value) {
+                      print("value: ${value}");
+                    },
                 ),
               ),
             ],
@@ -110,7 +114,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       mainAxisSize: MainAxisSize.min,
       children: [
         Image.asset("assets/images/bg.png", height: 160.0, width: double.infinity, fit: BoxFit.fill),
-        const SizedBox(height: 80,)
+        const SizedBox(height: 80)
       ],
     );
   }
@@ -120,7 +124,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       _getItemMenu(Icons.account_balance_wallet),
       _getItemMenu(Icons.account_balance_wallet),
       _getItemMenu(Icons.account_balance_wallet),
-      _getItemMenu(Icons.account_balance_wallet)
+      _getItemMenu(Icons.account_balance_wallet),
     ];
   }
 
@@ -129,7 +133,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       _getTextMenu("Menu 1"),
       _getTextMenu("Menu 2"),
       _getTextMenu("Menu 3"),
-      _getTextMenu("Menu 4")
+      _getTextMenu("Menu 44"),
     ];
   }
 
@@ -153,9 +157,11 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
   }
 
   Widget _getTextMenu(String text){
-    return Text(
-      text,
-      textAlign: TextAlign.center,
+    return Container(
+      child: Text(
+        text,
+        textAlign: TextAlign.center,
+      ),
     );
   }
 
@@ -208,10 +214,13 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
 
   Widget _getContainerView(){
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 16.0),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade200,
-        borderRadius: BorderRadius.circular(10),
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      color: Colors.transparent,
+      child: Container(
+        decoration: BoxDecoration(
+          color: Colors.grey.shade200,
+          borderRadius: BorderRadius.circular(10),
+        ),
       ),
     );
   }

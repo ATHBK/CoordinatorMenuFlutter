@@ -3,9 +3,9 @@ import 'package:flutter/rendering.dart';
 import 'dart:math' as math;
 import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
 
-class ContainerMenuView extends MultiChildRenderObjectWidget {
+import 'coordinator_menu_widget.dart';
 
-  static const buffer = 50.0;
+class ContainerMenuView extends MultiChildRenderObjectWidget {
 
   final Widget background;
   final List<Widget> listMenu;
@@ -34,16 +34,16 @@ class ContainerMenuView extends MultiChildRenderObjectWidget {
   @override
   RenderContainerMenu createRenderObject(BuildContext context) {
     return RenderContainerMenu(
-      paddingMenu: paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0),
-      paddingTitle: paddingTitle ?? const EdgeInsets.symmetric(vertical: 8.0)
+      paddingMenu: paddingMenu ?? CoordinatorMenuWidget.defaultPaddingMenu,
+      paddingTitle: paddingTitle ?? CoordinatorMenuWidget.defaultPaddingTitle,
     );
   }
 
   @override
   void updateRenderObject(BuildContext context, covariant RenderContainerMenu renderObject) {
     renderObject
-      ..paddingMenu = paddingMenu ?? const EdgeInsets.symmetric(vertical: 8.0)
-      ..paddingTitle = paddingTitle ?? const EdgeInsets.symmetric(vertical: 8.0);
+      ..paddingMenu = paddingMenu ?? CoordinatorMenuWidget.defaultPaddingMenu
+      ..paddingTitle = paddingTitle ?? CoordinatorMenuWidget.defaultPaddingTitle;
   }
 }
 
@@ -78,6 +78,7 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
   }
 
   final _indexFirstTitle = 3;
+  double _maxHeightText = 0;
 
   @override
   void setupParentData(covariant RenderObject child) {
@@ -96,15 +97,6 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
     return constraints.biggest.width;
   }
 
-  @override
-  double computeMinIntrinsicHeight(double width) {
-    return 100;
-  }
-
-  @override
-  double computeMaxIntrinsicHeight(double width) {
-    return 100;
-  }
 
   @override
   Size computeDryLayout(BoxConstraints constraints) {
@@ -137,7 +129,7 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
       }
       else {
         child.layout(
-            constraints.copyWith(minWidth: maxWidthText, maxWidth: maxWidthText), parentUsesSize: true);
+            constraints.copyWith(minWidth: maxWidthText, maxWidth: maxWidthText, minHeight: _maxHeightText, maxHeight: _maxHeightText), parentUsesSize: true);
         final x = paddingTitle.left + partTitle * (index - _indexFirstTitle) + paddingMenu.left;
         final y = size.height - child.size.height - paddingTitle.bottom;
         childParentData.offset = Offset(x, y);
@@ -203,12 +195,12 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
   Size _computeSize({required BoxConstraints constraints, required ChildLayouter layoutChild}){
     double width = constraints.maxWidth;
     double height = constraints.minHeight;
+    double maxHeight = constraints.maxHeight;
     RenderBox? child = firstChild;
     int index = 0;
     double hBg = 0;
     double hContentInside = 0;
-    double hMaxTitle = 0;
-    final maxWidthText =  ((width - paddingMenu.left - paddingMenu.right)/(childCount - _indexFirstTitle)) - paddingTitle.left - paddingTitle.right;
+    final maxWidthText = ((width - paddingMenu.left - paddingMenu.right)/(childCount - _indexFirstTitle)) - paddingTitle.left - paddingTitle.right;
     while(child != null){
       final childParentData = child.parentData! as ContainerMenuData;
       final Size childSize = layoutChild(child, constraints);
@@ -225,13 +217,13 @@ class RenderContainerMenu extends RenderBox with ContainerRenderObjectMixin<Rend
       }
       else {
         final Size childTextSize = layoutChild(child, constraints.copyWith(maxWidth: maxWidthText, minWidth: maxWidthText));
-        hMaxTitle = math.max(hMaxTitle, childTextSize.height);
+        _maxHeightText = math.max(_maxHeightText, childTextSize.height);
       }
       child = childParentData.nextSibling;
       index++;
     }
-    hContentInside += hMaxTitle + paddingTitle.top + paddingTitle.bottom + paddingMenu.top + paddingMenu.bottom;
-    return Size(width, math.max(height, math.max(hBg, hContentInside)));
+    hContentInside += _maxHeightText + paddingTitle.top + paddingTitle.bottom + paddingMenu.top + paddingMenu.bottom;
+    return Size(width, math.max(height, math.max(hBg == maxHeight ? 0 : hBg, hContentInside)));
   }
 
 
