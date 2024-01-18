@@ -6,6 +6,8 @@ Have you ever seen the ui/ux menu of e-wallet applications ? This library will c
 
 ## Understand layout
 
+![layout](gif/Screenshot_layer.png)
+
 ## Usage
 To use this plugin, add `coordinator_menu` as a [dependency in your pubspec.yaml file](https://flutter.dev/docs/development/platform-integration/platform-channels).
 
@@ -26,3 +28,23 @@ CoordinatorMenuWidget(
     paddingCollapseMenu: const EdgeInsets.fromLTRB(62, 8, 108, 8),
 ),
 ```
+
+## Property
+
+| Name | R/O | Description |
+| ------ | ------ | ------|
+| bg | R | Backgroud of Menu |
+| headerView | R | |
+| menus | R | |
+| listTitle | R | |
+| functionView | R | |
+| bgHeaderView | O | |
+| colorBgChange | O | |
+| containerMenuView | O | |
+| bgMenu | O | |
+| paddingMenu | O | |
+| paddingCollapseMenu | O | |
+| paddingTitle | O | |
+| colorFillRemain | O | |
+| functionViewPaddingTop | O | |
+| onFinishProgress | O | |
