@@ -109,6 +109,10 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     );
   }
 
+  Widget _getCustomStyle1(){
+
+  }
+
   Widget _getBg(){
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -193,7 +197,6 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     );
   }
 
-
   SliverMultiBoxAdaptorWidget _getListFunction() {
     return SliverGrid.builder(gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
         crossAxisCount: 4
@@ -224,4 +227,5 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
       ),
     );
   }
+
 }

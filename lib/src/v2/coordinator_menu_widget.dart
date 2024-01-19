@@ -8,6 +8,9 @@ import 'package:flutter_coordinator_menu/src/v2/remain_view.dart';
 
 import 'sliver_fill_remain_need_to_scroll.dart';
 
+///
+/// CoordinatorMenuWidget
+///
 
 class CoordinatorMenuWidget extends StatefulWidget {
 
@@ -34,7 +37,12 @@ class CoordinatorMenuWidget extends StatefulWidget {
     this.functionViewPaddingTop = 16.0
   });
 
+  ///  Default padding title
+  ///
   static const defaultPaddingTitle = EdgeInsets.fromLTRB(4.0, 0, 4.0, 8.0);
+
+  /// Default padding menu
+  ///
   static const defaultPaddingMenu = EdgeInsets.all(8.0);
 
   /// The sliver list or sliver grid view. This view contains smaller functions of the application
@@ -55,6 +63,7 @@ class CoordinatorMenuWidget extends StatefulWidget {
 
   /// A background of header
   /// It will appear when the user scrolls up and hide when scrolling down.
+  /// Default: Container(color: Colors.blue)
   /// bgHeaderView is optional
   final Widget? bgHeaderView;
 
@@ -158,7 +167,7 @@ class _CoordinatorMenuWidgetState extends State<CoordinatorMenuWidget> {
         ),
         LayerMenuAndHeaderView(
             header: widget.headerView,
-            backgroundHeader: widget.bgHeaderView ?? const SizedBox.shrink(),
+            backgroundHeader: widget.bgHeaderView ?? Container(color: Colors.blue),
             background: widget.bg,
             containerMenu: containerView,
             listMenu: widget.menus,

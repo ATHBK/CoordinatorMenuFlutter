@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'container_menu_view.dart';
 import 'dart:math' as math;
-import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
+import 'dart:ui' as ui show Color;
 
 import 'coordinator_menu_widget.dart';
 

@@ -31,20 +31,20 @@ CoordinatorMenuWidget(
 
 ## Property
 
-| Name | R/O | Description |
-| ------ | ------ | ------|
-| bg | R | Backgroud of Menu |
-| headerView | R | |
-| menus | R | |
-| listTitle | R | |
-| functionView | R | |
-| bgHeaderView | O | |
-| colorBgChange | O | |
-| containerMenuView | O | |
-| bgMenu | O | |
-| paddingMenu | O | |
-| paddingCollapseMenu | O | |
-| paddingTitle | O | |
-| colorFillRemain | O | |
-| functionViewPaddingTop | O | |
-| onFinishProgress | O | |
+| Name | R/O | Description                                                                                                                  |
+| ------ | ------ |------------------------------------------------------------------------------------------------------------------------------|
+| bg | R | This view is the background from the header to the menu view container                                                       |
+| headerView | R | Fixed view at the top. This view can contain child views on the left or right depending on your ui/ux                        |
+| menus | R | A list widget. It is the main functions of the application. As the view is scrolled, the menu will slowly move up the header |
+| listTitle | R | A list widget. Title of each menu. It should be a text widget.                                                               |
+| functionView | R | The sliver list or sliver grid view. This view contains smaller functions of the application                                 |
+| bgHeaderView | O | A background of header. It will appear when the user scrolls up and hide when scrolling down.                                |
+| colorBgChange | O | Color of background view. It will gradually app appear as the user scrolls up. And gradually disappears as the user scrolls down.                                              |
+| containerMenuView | O | View wraps the list menu and list Title.                                                                                                                             |
+| bgMenu | O | A widget. It will display as the background of each menu.                                                                                                                             |
+| paddingMenu | O | Distance of list menu between containerMenuView                                                                                                                             |
+| paddingCollapseMenu | O | Distance of list menu on header view between headerView                                                                                                                             |
+| paddingTitle | O | Distance of each tile between item menu                                                                                                                             |
+| colorFillRemain | O | Color of view remain to scroll                                                                                                                             |
+| functionViewPaddingTop | O | The sliver list or sliver grid view. This view contains smaller functions of the application                                 |
+| onFinishProgress | O | Called when the view is scrolled. With a value range from 0 to 1.                                                                                                                             |

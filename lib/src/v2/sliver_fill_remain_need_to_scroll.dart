@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'dart:math' as math;
 
 class SliverFillRemainNeedToScroll extends StatelessWidget {
 
@@ -54,7 +53,7 @@ class _RenderSliverRemainNeedToScroll extends RenderSliverSingleBoxAdapter {
     }
   }
 
-  double _sizeWidth = 1000;
+  final double _sizeWidth = 1000;
   double _sizeHeight = 0;
 
   @override

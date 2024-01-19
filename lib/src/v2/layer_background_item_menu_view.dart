@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'dart:math' as math;
-import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
+import 'dart:ui' as ui show Color;
 
-import 'container_menu_view.dart';
 
 class LayerBackgroundMenuView extends MultiChildRenderObjectWidget {
 
@@ -270,19 +269,18 @@ class RenderLayerBackgroundMenu extends RenderBox with ContainerRenderObjectMixi
     }
   }
 
-  void _paintBgHeaderView(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerBackgroundMenuData childParentData){
-    if (fraction >= 1){
-      context.paintChild(child, offset + childParentData.offset);
-    }
-    else if (fraction > 0) {
-      context.pushOpacity(
-          offset, ui.Color.getAlphaFromOpacity(fraction), (
-          PaintingContext context, Offset offset) {
-        context.paintChild(child, offset + childParentData.offset);
-      });
-    }
-  }
-
+  // void _paintBgHeaderView(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerBackgroundMenuData childParentData){
+  //   if (fraction >= 1){
+  //     context.paintChild(child, offset + childParentData.offset);
+  //   }
+  //   else if (fraction > 0) {
+  //     context.pushOpacity(
+  //         offset, ui.Color.getAlphaFromOpacity(fraction), (
+  //         PaintingContext context, Offset offset) {
+  //       context.paintChild(child, offset + childParentData.offset);
+  //     });
+  //   }
+  // }
 
   void _paintMenu(PaintingContext context, Offset offset, double fraction, int index, RenderBox child, LayerBackgroundMenuData childParentData){
     final originOffset = childParentData.offset;

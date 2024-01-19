@@ -1,8 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'dart:ui' as ui show Color, Gradient, Image, ImageFilter;
-
-import 'container_menu_view.dart';
+import 'dart:ui' as ui show Color;
 
 class LayerBackgroundView extends MultiChildRenderObjectWidget {
 
