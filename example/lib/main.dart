@@ -86,22 +86,7 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
           child: Column(
             children: [
               Expanded(
-                child: CoordinatorMenuWidget(
-                    headerView: _getHeaderView(),
-                    bgHeaderView: _getBgHeaderView(),
-                    bg: _getBg(),
-                    colorBgChange: Colors.white,
-                    containerMenuView: _getContainerView(),
-                    bgMenu: _getBgMenu(),
-                    menus: _getMenus(),
-                    listTitle: _getTitle(),
-                    paddingMenu: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
-                    functionView: _getListFunction(),
-                    paddingCollapseMenu: const EdgeInsets.fromLTRB(62, 8, 108, 8),
-                    onFinishProgress: (value) {
-                      print("value: ${value}");
-                    },
-                ),
+                child: _getBasicStyle()
               ),
             ],
           ),
@@ -109,8 +94,23 @@ class _MyHomePageState extends State<MyHomePage> with SingleTickerProviderStateM
     );
   }
 
-  Widget _getCustomStyle1(){
-
+  Widget _getBasicStyle(){
+    return CoordinatorMenuWidget(
+      headerView: _getHeaderView(),
+      bgHeaderView: _getBgHeaderView(),
+      bg: _getBg(),
+      colorBgChange: Colors.white,
+      containerMenuView: _getContainerView(),
+      bgMenu: _getBgMenu(),
+      menus: _getMenus(),
+      listTitle: _getTitle(),
+      paddingMenu: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
+      functionView: _getListFunction(),
+      paddingCollapseMenu: const EdgeInsets.fromLTRB(62, 8, 108, 8),
+      onFinishProgress: (value) {
+        print("value: ${value}");
+      },
+    );
   }
 
   Widget _getBg(){
