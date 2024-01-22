@@ -1,4 +1,4 @@
-package com.athbk.flutter_coordinator_menu
+package com.athbk.coordinator_menu
 
 import io.flutter.embedding.android.FlutterActivity
 

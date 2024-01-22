@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_coordinator_menu/src/v2/container_menu_view.dart';
-import 'package:flutter_coordinator_menu/src/v2/layer_background_item_menu_view.dart';
-import 'package:flutter_coordinator_menu/src/v2/layer_background_view.dart';
-import 'package:flutter_coordinator_menu/src/v2/layer_bound_menu_view.dart';
-import 'package:flutter_coordinator_menu/src/v2/layer_menu_and_header_view.dart';
-import 'package:flutter_coordinator_menu/src/v2/remain_view.dart';
+import 'package:coordinator_menu/src/v2/container_menu_view.dart';
+import 'package:coordinator_menu/src/v2/layer_background_item_menu_view.dart';
+import 'package:coordinator_menu/src/v2/layer_background_view.dart';
+import 'package:coordinator_menu/src/v2/layer_bound_menu_view.dart';
+import 'package:coordinator_menu/src/v2/layer_menu_and_header_view.dart';
+import 'package:coordinator_menu/src/v2/remain_view.dart';
 
 import 'sliver_fill_remain_need_to_scroll.dart';
 

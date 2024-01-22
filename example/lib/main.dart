@@ -1,6 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_coordinator_menu/coordinator_menu.dart';
+import 'package:coordinator_menu/coordinator_menu.dart';
 
 void main() {
   runApp(const MyApp());

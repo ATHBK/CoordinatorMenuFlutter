@@ -30,7 +30,7 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  flutter_coordinator_menu:
+  coordinator_menu:
     path: ../
 
   # The following adds the Cupertino Icons font to your application.
