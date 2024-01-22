@@ -1,5 +1,5 @@
 # Coordinator Menu Widget
-[![pub package](https://img.shields.io/pub/v/coordinator_menu)](https://pub.dev/packages/coordinator_menu) [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](https://opensource.org/licenses/MIT)
+[![pub package](https://img.shields.io/pub/v/coordinator_menu)](https://pub.dev/packages/coordinator_menu) [![License: APACHE-2.0](https://img.shields.io/badge/license-Apache-blue)](https://opensource.org/license/apache-2-0/)
 
 Have you ever seen the ui/ux menu of e-wallet applications ? This library will cover that for you
 
